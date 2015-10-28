@@ -9,18 +9,33 @@
   <code_event_listeners>
     <listener event_id="file_health_check" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="file_health_check" active="1" hint="" description=""/>
     <listener event_id="front_controller_pre_view" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="front_controller_pre_view" active="1" hint="" description=""/>
+    <listener event_id="init_dependencies" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="init_dependencies" active="1" hint="" description=""/>
     <listener event_id="template_file_change" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="template_file_change" active="1" hint="" description=""/>
   </code_event_listeners>
   <cron/>
   <email_templates/>
   <email_template_modifications/>
-  <optiongroups/>
+  <optiongroups>
+    <group group_id="bdCloudServerHelper" display_order="9999" debug_only="0"/>
+    <option option_id="bdcsh_redis" edit_format="checkbox" data_type="array" can_backup="1">
+      <default_value></default_value>
+      <edit_format_params>thread_view = {xen:phrase bdcsh_redis_thread_view}</edit_format_params>
+      <sub_options>*</sub_options>
+      <relation group_id="bdCloudServerHelper" display_order="10"/>
+    </option>
+  </optiongroups>
   <permissions>
     <permission_groups/>
     <permissions/>
     <interface_groups/>
   </permissions>
-  <phrases/>
+  <phrases>
+    <phrase title="bdcsh_redis_thread_view" version_id="1" version_string="0.9-dev"><![CDATA[Thread View Logging]]></phrase>
+    <phrase title="option_bdcsh_redis" version_id="1" version_string="0.9-dev"><![CDATA[Use Redis]]></phrase>
+    <phrase title="option_bdcsh_redis_explain" version_id="1" version_string="0.9-dev"><![CDATA[Check the boxes for functionalities for which you want to use Redis to handle (instead of default implementation). Note: config.php must be configured with at least <span style="font: Courier New">$config['bdCloudServerHelper_redis']['host'] = '127.0.0.1';</span> for this to work.]]></phrase>
+    <phrase title="option_group_bdCloudServerHelper" version_id="1" version_string="0.9-dev"><![CDATA[[bd] Cloud Server Helper]]></phrase>
+    <phrase title="option_group_bdCloudServerHelper_description" version_id="1" version_string="0.9-dev"><![CDATA[]]></phrase>
+  </phrases>
   <route_prefixes/>
   <style_properties/>
   <templates/>

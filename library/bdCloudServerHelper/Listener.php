@@ -4,6 +4,22 @@ class bdCloudServerHelper_Listener
 {
     protected static $_templateFileChanged = 0;
 
+    public static function init_dependencies()
+    {
+        if (bdCloudServerHelper_Option::get('redis', 'thread_view')) {
+            XenForo_CodeEvent::addListener('load_class_model',
+                array(__CLASS__, 'load_class_XenForo_Model_Thread'),
+                'XenForo_Model_Thread');
+        }
+    }
+
+    public static function load_class_XenForo_Model_Thread($class, array &$extend)
+    {
+        if ($class === 'XenForo_Model_Thread') {
+            $extend[] = 'bdCloudServerHelper_XenForo_Model_Thread';
+        }
+    }
+
     public static function front_controller_pre_view(
         /** @noinspection PhpUnusedParameterInspection */
         XenForo_FrontController $fc,
