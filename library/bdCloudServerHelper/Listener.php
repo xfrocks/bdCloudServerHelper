@@ -6,10 +6,23 @@ class bdCloudServerHelper_Listener
 
     public static function init_dependencies()
     {
-        if (bdCloudServerHelper_Option::get('redis', 'thread_view')) {
+        $redisOption = bdCloudServerHelper_Option::get('redis');
+        if ($redisOption['attachment_view'] > 0) {
+            XenForo_CodeEvent::addListener('load_class_model',
+                array(__CLASS__, 'load_class_XenForo_Model_Attachment'),
+                'XenForo_Model_Attachment');
+        }
+        if ($redisOption['thread_view'] > 0) {
             XenForo_CodeEvent::addListener('load_class_model',
                 array(__CLASS__, 'load_class_XenForo_Model_Thread'),
                 'XenForo_Model_Thread');
+        }
+    }
+
+    public static function load_class_XenForo_Model_Attachment($class, array &$extend)
+    {
+        if ($class === 'XenForo_Model_Attachment') {
+            $extend[] = 'bdCloudServerHelper_XenForo_Model_Attachment';
         }
     }
 
