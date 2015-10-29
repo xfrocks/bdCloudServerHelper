@@ -7,12 +7,12 @@ class bdCloudServerHelper_Listener
     public static function init_dependencies()
     {
         $redisOption = bdCloudServerHelper_Option::get('redis');
-        if ($redisOption['attachment_view'] > 0) {
+        if (!empty($redisOption['attachment_view'])) {
             XenForo_CodeEvent::addListener('load_class_model',
                 array(__CLASS__, 'load_class_XenForo_Model_Attachment'),
                 'XenForo_Model_Attachment');
         }
-        if ($redisOption['thread_view'] > 0) {
+        if (!empty($redisOption['thread_view'])) {
             XenForo_CodeEvent::addListener('load_class_model',
                 array(__CLASS__, 'load_class_XenForo_Model_Thread'),
                 'XenForo_Model_Thread');
