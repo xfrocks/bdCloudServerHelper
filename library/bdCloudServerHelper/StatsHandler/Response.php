@@ -6,6 +6,7 @@ class bdCloudServerHelper_StatsHandler_Response extends XenForo_StatsHandler_Abs
     {
         return array(
             'bdcsh_stats_success' => new XenForo_Phrase('bdcsh_cloud_stats_success'),
+            'bdcsh_stats_4xx' => new XenForo_Phrase('bdcsh_cloud_stats_4xx'),
             'bdcsh_stats_error' => new XenForo_Phrase('bdcsh_cloud_stats_error'),
             'bdcsh_stats_pageTime' => new XenForo_Phrase('bdcsh_cloud_stats_page_time_avg'),
         );

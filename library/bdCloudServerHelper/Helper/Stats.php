@@ -15,8 +15,19 @@ class bdCloudServerHelper_Helper_Stats
             $pageTime = microtime(true) - XenForo_Application::get('page_start_time');
 
             $responseType = 'success';
-            if ($fc->getResponse()->getHttpResponseCode() != 200) {
-                $responseType = 'error';
+            $httpResponseCode = $fc->getResponse()->getHttpResponseCode();
+            if ($httpResponseCode != 200) {
+                if ($httpResponseCode >= 300
+                    && $httpResponseCode < 400
+                ) {
+                    // redirect? still success
+                } elseif ($httpResponseCode >= 400
+                    && $httpResponseCode < 500
+                ) {
+                    $responseType = '4xx';
+                } else {
+                    $responseType = 'error';
+                }
             }
 
             if (bdCloudServerHelper_Helper_Redis::increaseCounter('stats_' . $responseType, $segment) > 0) {
@@ -40,6 +51,7 @@ class bdCloudServerHelper_Helper_Stats
     public static function aggregate()
     {
         self::_aggregate('success');
+        self::_aggregate('4xx');
         self::_aggregate('error');
         self::_aggregate('pageTime', self::DAILY_STATS_MULTIPLIER_PAGE_TIME);
     }
@@ -47,11 +59,13 @@ class bdCloudServerHelper_Helper_Stats
     public static function compileStatsForSegment($segment)
     {
         $successCounters = bdCloudServerHelper_Helper_Redis::getCounters('stats_success');
+        $_4xxCounters = bdCloudServerHelper_Helper_Redis::getCounters('stats_4xx');
         $errorCounters = bdCloudServerHelper_Helper_Redis::getCounters('stats_error');
         $pageTimes = bdCloudServerHelper_Helper_Redis::getCounters('stats_pageTime');
 
         $stats = array(
             'success' => 0,
+            '4xx' => 0,
             'error' => 0,
             'total' => 0,
             'pageTime_avg' => 0,
@@ -61,6 +75,10 @@ class bdCloudServerHelper_Helper_Stats
         if (isset($successCounters[$segment])) {
             $stats['success'] = $successCounters[$segment];
             $total += $stats['success'];
+        }
+        if (isset($_4xxCounters[$segment])) {
+            $stats['4xx'] = $_4xxCounters[$segment];
+            $total += $stats['4xx'];
         }
         if (isset($errorCounters[$segment])) {
             $stats['error'] = $errorCounters[$segment];

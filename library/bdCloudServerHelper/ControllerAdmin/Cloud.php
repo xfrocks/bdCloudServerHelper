@@ -25,13 +25,8 @@ class bdCloudServerHelper_ControllerAdmin_Cloud extends XenForo_ControllerAdmin_
 
     public function getStatsData($start, $end, $grouping = 'hourly')
     {
-        $statsTypes = array(
-            'bdcsh_stats_success',
-            'bdcsh_stats_error',
-            'bdcsh_stats_pageTime',
-        );
-
         $statsModel = $this->_getStatsModel();
+        $statsTypes = $statsModel->getStatsTypesSimple();
 
         $plots = $statsModel->getStatsData($start, $end, $statsTypes, $grouping);
         $plots = $statsModel->preparePageTimeAvg($plots);
@@ -61,7 +56,6 @@ class bdCloudServerHelper_ControllerAdmin_Cloud extends XenForo_ControllerAdmin_
             'start' => $start,
             'end' => $end,
             'endDisplay' => ($end >= XenForo_Application::$time ? 0 : $end),
-            'statsTypeOptions' => $statsModel->getStatsTypeOptions($statsTypes),
             'statsTypePhrases' => $statsModel->getStatsTypePhrases($statsTypes),
             'datePresets' => XenForo_Helper_Date::getDatePresets(),
             'grouping' => $grouping,

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<addon addon_id="bdCloudServerHelper" title="[bd] Cloud Server Helper" version_string="1.2.0" version_id="5" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
+<addon addon_id="bdCloudServerHelper" title="[bd] Cloud Server Helper" version_string="1.2.1" version_id="6" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
   <admin_navigation/>
   <admin_permissions/>
   <admin_style_properties/>
@@ -38,6 +38,15 @@
 		<dd>
 			<xen:include template="bdcsh_cloud_stats_percent_x_of_y">
 				<xen:set var="$x">{$currentStats.success}</xen:set>
+				<xen:set var="$y">{$currentStats.total}</xen:set>
+			</xen:include>
+		</dd>
+	</dl>
+	<dl class="pairsJustified 4xx">
+		<dt>{xen:phrase bdcsh_cloud_stats_4xx}:</dt>
+		<dd>
+			<xen:include template="bdcsh_cloud_stats_percent_x_of_y">
+				<xen:set var="$x">{$currentStats.4xx}</xen:set>
 				<xen:set var="$y">{$currentStats.total}</xen:set>
 			</xen:include>
 		</dd>
@@ -90,6 +99,11 @@ jQuery(function()
 			color: "#4F8A10",
 			points: { show: true },
 			lines: { show: true },
+			<xen:elseif is="{$contentType} === 'bdcsh_stats_4xx'"/>
+			yaxis: 1,
+			color: "#FFF8C4",
+			points: { show: true },
+			lines: { show: true },
 			<xen:elseif is="{$contentType} === 'bdcsh_stats_error'"/>
 			yaxis: 1,
 			color: "#D8000C",
@@ -138,10 +152,14 @@ jQuery(function()
 		},
 		yaxes: [
 			{
-				position: 'left'
+				position: 'left',
+				tickDecimals: 0
 			},
 			{
-				position: 'right'
+				position: 'right',
+				tickFormatter: function(s) {
+					return (Math.round(s * 100) / 100) + 's'
+				}
 			}
 		]
 	},
@@ -256,6 +274,7 @@ thread_view = {xen:phrase bdcsh_redis_thread_view}</edit_format_params>
   <phrases>
     <phrase title="bdcsh_cloud_current_stats_since_x" version_id="4" version_string="1.1.0"><![CDATA[Live stats since {time}]]></phrase>
     <phrase title="bdcsh_cloud_stats" version_id="4" version_string="1.1.0"><![CDATA[Statistics]]></phrase>
+    <phrase title="bdcsh_cloud_stats_4xx" version_id="5" version_string="1.2.0"><![CDATA[Access Denied]]></phrase>
     <phrase title="bdcsh_cloud_stats_error" version_id="4" version_string="1.1.0"><![CDATA[Error]]></phrase>
     <phrase title="bdcsh_cloud_stats_graph_from_x_to_y" version_id="4" version_string="1.1.0"><![CDATA[Graph from {from} to {to}]]></phrase>
     <phrase title="bdcsh_cloud_stats_page_time_avg" version_id="4" version_string="1.1.0"><![CDATA[Average Page Time]]></phrase>

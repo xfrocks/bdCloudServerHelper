@@ -2,21 +2,36 @@
 
 class bdCloudServerHelper_Model_Stats extends XenForo_Model_Stats
 {
+    public function getStatsTypesSimple()
+    {
+        return array(
+            'bdcsh_stats_success',
+            'bdcsh_stats_4xx',
+            'bdcsh_stats_error',
+            'bdcsh_stats_pageTime',
+        );
+    }
+
     public function preparePageTimeAvg(array $plots)
     {
-        foreach ($plots['bdcsh_stats_pageTime'] as $segment => &$valueRef) {
-            $total = 0;
-            if (isset($plots['bdcsh_stats_success'][$segment])) {
-                $total += $plots['bdcsh_stats_success'][$segment];
-            }
-            if (isset($plots['bdcsh_stats_error'][$segment])) {
-                $total += $plots['bdcsh_stats_error'][$segment];
-            }
+        if (!empty($plots['bdcsh_stats_pageTime'])) {
+            foreach ($plots['bdcsh_stats_pageTime'] as $segment => &$valueRef) {
+                $total = 0;
+                if (isset($plots['bdcsh_stats_success'][$segment])) {
+                    $total += $plots['bdcsh_stats_success'][$segment];
+                }
+                if (isset($plots['bdcsh_stats_4xx'][$segment])) {
+                    $total += $plots['bdcsh_stats_4xx'][$segment];
+                }
+                if (isset($plots['bdcsh_stats_error'][$segment])) {
+                    $total += $plots['bdcsh_stats_error'][$segment];
+                }
 
-            if ($total > 0) {
-                $valueRef /= $total * bdCloudServerHelper_Helper_Stats::DAILY_STATS_MULTIPLIER_PAGE_TIME;
-            } else {
-                $valueRef = 0;
+                if ($total > 0) {
+                    $valueRef /= $total * bdCloudServerHelper_Helper_Stats::DAILY_STATS_MULTIPLIER_PAGE_TIME;
+                } else {
+                    $valueRef = 0;
+                }
             }
         }
 
