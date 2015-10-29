@@ -17,6 +17,17 @@ class bdCloudServerHelper_Listener
                 array(__CLASS__, 'load_class_XenForo_Model_Thread'),
                 'XenForo_Model_Thread');
         }
+
+        if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+            $requestPaths = XenForo_Application::get('requestPaths');
+            $requestPaths['protocol'] = 'https';
+            $hostWithoutPort = preg_replace('#:\d+$#', '', $requestPaths['host']);
+            $requestPaths['fullBasePath'] = $requestPaths['protocol'] . '://' . $hostWithoutPort . $requestPaths['basePath'];
+            $requestPaths['fullUri'] = $requestPaths['protocol'] . '://' . $hostWithoutPort . $requestPaths['requestUri'];
+            XenForo_Application::set('requestPaths', $requestPaths);
+
+            XenForo_Application::$secure = true;
+        }
     }
 
     public static function load_class_XenForo_Model_Attachment($class, array &$extend)
