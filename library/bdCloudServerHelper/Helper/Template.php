@@ -23,6 +23,9 @@ class bdCloudServerHelper_Helper_Template
         $lastMod = 0;
         $visitor = XenForo_Visitor::getInstance();
         $styleId = (!empty($visitor['style_id']) ? $visitor['style_id'] : 0);
+        if ($styleId === 0) {
+            $styleId = XenForo_Application::getOptions()->get('defaultStyleId');
+        }
 
         /** @noinspection PhpUndefinedMethodInspection */
         $styles = (XenForo_Application::isRegistered('styles')
