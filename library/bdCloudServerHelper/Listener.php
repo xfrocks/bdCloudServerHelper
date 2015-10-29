@@ -28,6 +28,9 @@ class bdCloudServerHelper_Listener
 
             XenForo_Application::$secure = true;
         }
+
+        // inject hostname into $_POST to make it available in server error log
+        $_POST['.hostname'] = gethostname();
     }
 
     public static function load_class_XenForo_Model_Attachment($class, array &$extend)
@@ -41,6 +44,13 @@ class bdCloudServerHelper_Listener
     {
         if ($class === 'XenForo_Model_Thread') {
             $extend[] = 'bdCloudServerHelper_XenForo_Model_Thread';
+        }
+    }
+
+    public static function load_class_XenForo_ViewAdmin_Log_ServerErrorView($class, array &$extend)
+    {
+        if ($class === 'XenForo_ViewAdmin_Log_ServerErrorView') {
+            $extend[] = 'bdCloudServerHelper_XenForo_ViewAdmin_Log_ServerErrorView';
         }
     }
 
@@ -60,6 +70,10 @@ class bdCloudServerHelper_Listener
             && $fc->getDependencies() instanceof XenForo_Dependencies_Public
         ) {
             bdCloudServerHelper_Helper_Template::makeSureTemplatesAreUpToDate();
+        }
+
+        if (XenForo_Application::debugMode()) {
+            $fc->getResponse()->setHeader('X-XenForo-Hostname', gethostname());
         }
     }
 

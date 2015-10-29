@@ -1,15 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<addon addon_id="bdCloudServerHelper" title="[bd] Cloud Server Helper" version_string="1.0.1" version_id="3" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
+<addon addon_id="bdCloudServerHelper" title="[bd] Cloud Server Helper" version_string="1.1.0" version_id="4" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
   <admin_navigation/>
   <admin_permissions/>
   <admin_style_properties/>
-  <admin_templates/>
-  <admin_template_modifications/>
+  <admin_templates>
+    <template title="bdcsh_log_server_error_view"><![CDATA[<xen:if hascontent="true">
+	<tr>
+		<th class="subHeading">{xen:phrase bdcsh_hostname}</th>
+	</tr>
+	<tr>
+		<td class="primaryContent">
+			<xen:contentcheck>{$bdCloudServerHelper_hostname}</xen:contentcheck>
+		</td>
+	</tr>
+</xen:if>
+
+<xen:edithint template="log_server_error_view" />]]></template>
+  </admin_templates>
+  <admin_template_modifications>
+    <modification template="log_server_error_view" modification_key="bdcsh_log_server_error_view" description="Insert hostname for server error log view." execution_order="10" enabled="1" action="str_replace">
+      <find><![CDATA[<table width="100%">]]></find>
+      <replace><![CDATA[$0
+
+<xen:include template="bdcsh_log_server_error_view" />]]></replace>
+    </modification>
+  </admin_template_modifications>
   <code_events/>
   <code_event_listeners>
     <listener event_id="file_health_check" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="file_health_check" active="1" hint="" description=""/>
     <listener event_id="front_controller_pre_view" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="front_controller_pre_view" active="1" hint="" description=""/>
     <listener event_id="init_dependencies" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="init_dependencies" active="1" hint="" description=""/>
+    <listener event_id="load_class_view" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_ViewAdmin_Log_ServerErrorView" active="1" hint="XenForo_ViewAdmin_Log_ServerErrorView" description="XenForo_ViewAdmin_Log_ServerErrorView"/>
     <listener event_id="template_file_change" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="template_file_change" active="1" hint="" description=""/>
   </code_event_listeners>
   <cron/>
@@ -31,6 +52,7 @@ thread_view = {xen:phrase bdcsh_redis_thread_view}</edit_format_params>
     <interface_groups/>
   </permissions>
   <phrases>
+    <phrase title="bdcsh_hostname" version_id="3" version_string="1.0.1"><![CDATA[Hostname]]></phrase>
     <phrase title="bdcsh_redis_attachment_view" version_id="1" version_string="0.9-dev"><![CDATA[Attachment View Logging]]></phrase>
     <phrase title="bdcsh_redis_thread_view" version_id="1" version_string="0.9-dev"><![CDATA[Thread View Logging]]></phrase>
     <phrase title="option_bdcsh_redis" version_id="1" version_string="0.9-dev"><![CDATA[Use Redis]]></phrase>
