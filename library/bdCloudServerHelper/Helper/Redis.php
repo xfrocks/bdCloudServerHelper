@@ -2,6 +2,8 @@
 
 class bdCloudServerHelper_Helper_Redis
 {
+    protected static $_keyPrefix = 'xf_';
+
     /**
      * @return Redis
      */
@@ -12,6 +14,7 @@ class bdCloudServerHelper_Helper_Redis
         if ($redis === null) {
             $redis = false;
 
+            /** @var Zend_Config $config */
             $config = XenForo_Application::getConfig();
             $redisConfig = $config->get('bdCloudServerHelper_redis');
             if (empty($redisConfig)) {
@@ -49,6 +52,11 @@ class bdCloudServerHelper_Helper_Redis
                 return $redis;
             }
 
+            $keyPrefix = $redisConfig->get('key_prefix');
+            if (!empty($keyPrefix)) {
+                self::$_keyPrefix = $keyPrefix;
+            }
+
             $redis = $_redis;
         }
 
@@ -56,7 +64,7 @@ class bdCloudServerHelper_Helper_Redis
         return $redis;
     }
 
-    public static function increaseCounter($type, $varName, $varValue = null)
+    public static function increaseCounter($type, $varName, $varValue = null, $isFloat = false)
     {
         $redis = self::getConnection();
         if ($redis === false) {
@@ -65,8 +73,10 @@ class bdCloudServerHelper_Helper_Redis
 
         if ($varValue === null) {
             return $redis->hIncrBy(self::getHashKey($type), $varName, 1);
-        } else {
+        } elseif ($isFloat === false) {
             return $redis->hIncrBy(self::getHashKey($type), $varName, $varValue);
+        } else {
+            return $redis->hIncrByFloat(self::getHashKey($type), $varName, $varValue);
         }
     }
 
@@ -80,18 +90,37 @@ class bdCloudServerHelper_Helper_Redis
         return $redis->hGetAll(self::getHashKey($type));
     }
 
-    public static function clearCounter($type, $varName)
+    /**
+     * @param string $type
+     * @param array|string $varNames
+     * @return bool
+     */
+    public static function clearCounter($type, $varNames)
     {
-        $redis = self::getConnection();
-        if ($redis === false) {
-            return array();
+        $params = array(self::getHashKey($type));
+
+        if (is_array($varNames)) {
+            if (count($varNames) == 0) {
+                return false;
+            }
+
+            foreach ($varNames as $varName) {
+                $params[] = $varName;
+            }
+        } else {
+            $params[] = $varNames;
         }
 
-        return $redis->hSet(self::getHashKey($type), $varName, 0) !== false;
+        $redis = self::getConnection();
+        if ($redis === false) {
+            return false;
+        }
+
+        return call_user_func_array(array($redis, 'hDel'), $params) > 0;
     }
 
     public static function getHashKey($key)
     {
-        return 'xf_' . $key;
+        return self::$_keyPrefix . $key;
     }
 }

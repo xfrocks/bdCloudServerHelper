@@ -6,7 +6,6 @@ class bdCloudServerHelper_Listener
 
     public static function init_dependencies()
     {
-
         if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
             $requestPaths = XenForo_Application::get('requestPaths');
             $requestPaths['protocol'] = 'https';
@@ -63,6 +62,18 @@ class bdCloudServerHelper_Listener
 
         if (XenForo_Application::debugMode()) {
             $fc->getResponse()->setHeader('X-XenForo-Hostname', gethostname());
+        }
+    }
+
+    public static function front_controller_post_view(
+        XenForo_FrontController $fc,
+        /** @noinspection PhpUnusedParameterInspection */
+        &$output)
+    {
+        if (bdCloudServerHelper_Option::get('redisStats')
+            && $fc->getDependencies() instanceof XenForo_Dependencies_Public
+        ) {
+            bdCloudServerHelper_Helper_Stats::log($fc);
         }
     }
 

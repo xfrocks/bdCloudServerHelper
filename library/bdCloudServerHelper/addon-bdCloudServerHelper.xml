@@ -4,6 +4,197 @@
   <admin_permissions/>
   <admin_style_properties/>
   <admin_templates>
+    <template title="bdcsh.css"><![CDATA[h2
+{
+	font-size: 1.8em;
+	margin: 0.5em 0;
+}
+
+.currentStats
+{
+	font-size: 1.5em;
+	max-width: 400px;
+}
+
+#StatsGraph .legend:hover > table,
+#StatsGraph .legend:hover > div
+{
+	opacity: 0 !important
+}]]></template>
+    <template title="bdcsh_cloud_stats"><![CDATA[<xen:require css="bdcsh.css" />
+
+<xen:title>{xen:phrase bdcsh_cloud_stats}</xen:title>
+
+<h2>{xen:phrase bdcsh_cloud_current_stats_since_x, 'time={xen:time $currentSegment}'}</h2>
+<div class="currentStats">
+	<dl class="pairsJustified total">
+		<dt>{xen:phrase bdcsh_cloud_stats_total}:</dt>
+		<dd>
+			{xen:number $currentStats.total}
+		</dd>
+	</dl>
+	<dl class="pairsJustified success">
+		<dt>{xen:phrase bdcsh_cloud_stats_success}:</dt>
+		<dd>
+			<xen:include template="bdcsh_cloud_stats_percent_x_of_y">
+				<xen:set var="$x">{$currentStats.success}</xen:set>
+				<xen:set var="$y">{$currentStats.total}</xen:set>
+			</xen:include>
+		</dd>
+	</dl>
+	<dl class="pairsJustified error">
+		<dt>{xen:phrase bdcsh_cloud_stats_error}:</dt>
+		<dd>
+			<xen:include template="bdcsh_cloud_stats_percent_x_of_y">
+				<xen:set var="$x">{$currentStats.error}</xen:set>
+				<xen:set var="$y">{$currentStats.total}</xen:set>
+			</xen:include>
+		</dd>
+	</dl>
+
+	<dl class="pairsJustified pageTime_avg">
+		<dt>{xen:phrase bdcsh_cloud_stats_page_time_avg}:</dt>
+		<dd>{xen:number $currentStats.pageTime_avg, 5}</dd>
+	</dl>
+</div>
+
+<h2>{xen:phrase bdcsh_cloud_stats_graph_from_x_to_y,
+		'from={xen:date $graphMinDate, 'Y-m-d H:i'}',
+		'to={xen:date $graphMaxDate, 'Y-m-d H:i'}'}</h2>
+<div class="statsGraph">
+	<div id="StatsGraph" style="width: 720px; height: 350px"></div>
+	<div id="StatsTooltip" class="xenTooltip flipped">
+		<span class="text"></span>
+		<span class="arrow"><span></span></span>
+	</div>
+
+	<xen:form action="{xen:adminlink cloud/stats}">
+
+		<xen:submitunit save="{xen:phrase show}" />
+
+	</xen:form>
+</div>
+
+<xen:require js="js/flot/jquery.flot.min.js" />
+<!--[if lte IE 8]><script src="js/flot/excanvas.min.js"></script><![endif]-->
+<script>
+
+jQuery(function()
+{
+	var data =
+	[
+	<xen:foreach loop="$plots" key="$contentType" value="$plot" i="$i">
+		{
+			<xen:if is="{$contentType} === 'bdcsh_stats_success'">
+			yaxis: 1,
+			color: "#4F8A10",
+			points: { show: true },
+			lines: { show: true },
+			<xen:elseif is="{$contentType} === 'bdcsh_stats_error'"/>
+			yaxis: 1,
+			color: "#D8000C",
+			points: { show: true },
+			lines: { show: true },
+			<xen:else /><xen:comment>{$contentType} === 'bdcsh_stats_pageTime'</xen:comment>
+			yaxis: 2,
+			color: "#00529B",
+			bars: { show: true },
+			</xen:if>
+			label: "{xen:jsescape {$statsTypePhrases.{$contentType}}}",
+			contentType: "{xen:jsescape $contentType}",
+			data: {xen:helper json, $plot}
+		},
+	</xen:foreach>
+		{}
+	],
+	options =
+	{
+		grid:
+		{
+			show: true,
+			hoverable: true,
+			borderWidth: 1,
+			color: '{xen:property primaryMedium}',
+			backgroundColor: '{xen:property primaryLightest}'
+		},
+		colors: [ '{xen:property primaryMedium}', '{xen:property secondaryMedium}', '{xen:property primaryLight}', '{xen:property secondaryLight}' ],
+		xaxis: {
+			tickFormatter: function(n)
+			{
+	 			for (var t in dateMap)
+	 			{
+	 				if (dateMap[t][n])
+	 				{
+	 					return dateMap[t][n];
+	 				}
+	 				else if (dateMap[t][n / 1000])
+	 				{
+	 					return dateMap[t][n / 1000];
+	 				}
+	 			}
+					
+				return '';
+			}
+		},
+		yaxes: [
+			{
+				position: 'left'
+			},
+			{
+				position: 'right'
+			}
+		]
+	},
+	$placeholder = $('#StatsGraph'),
+	$tooltip = $('#StatsTooltip').appendTo('body').css('position', 'absolute'),
+	prevDataIndex = null,
+	dateMap = {xen:helper json, $dateMap};
+	
+	$.plot($placeholder, data, options);
+	
+	$placeholder.bind('plothover', function(e, pos, item)
+	{
+		if (item !== null)
+		{
+			if (item.dataIndex != prevDataIndex)
+			{
+				var browserWidth = $('html').width(),
+					dateString = dateMap[item.series.contentType][item.datapoint[0]]
+						|| dateMap[item.series.contentType][item.datapoint[0] / 1000]  
+						|| new Date(item.datapoint[0]).toDateString();
+									
+				prevDataIndex = item.dataIndex;
+				
+				$tooltip.hide().find('span.text').html(dateString + ', ' + item.series.label + ': ' + new String(item.datapoint[1]).bold());
+								
+				$tooltip.css(
+				{
+					<xen:if is="{$pageIsRtl}">
+					left: item.pageX - 14,
+					<xen:else />
+					right: browserWidth - item.pageX - 14,
+					</xen:if>
+					top: item.pageY - 38
+				})
+				.fadeIn(XenForo.speed.fast);
+			}
+		}
+		else
+		{
+			$('#StatsTooltip').hide();
+			prevDataIndex = null;
+		}
+	});
+});
+
+</script>]]></template>
+    <template title="bdcsh_cloud_stats_percent_x_of_y"><![CDATA[<xen:if is="{$y} > 0">
+	<span title="{xen:number $x}/{xen:number $y}" class="Tooltip">
+		{xen:number {xen:calc '{$x} / {$y} * 100'}, 2}%
+	</span>
+<xen:else />
+	{xen:number $x}/{xen:number $y}
+</xen:if>]]></template>
     <template title="bdcsh_log_server_error_view"><![CDATA[<xen:if hascontent="true">
 	<tr>
 		<th class="subHeading">{xen:phrase bdcsh_hostname}</th>
@@ -28,6 +219,7 @@
   <code_events/>
   <code_event_listeners>
     <listener event_id="file_health_check" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="file_health_check" active="1" hint="" description=""/>
+    <listener event_id="front_controller_post_view" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="front_controller_post_view" active="1" hint="" description=""/>
     <listener event_id="front_controller_pre_view" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="front_controller_pre_view" active="1" hint="" description=""/>
     <listener event_id="init_dependencies" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="init_dependencies" active="1" hint="" description=""/>
     <listener event_id="load_class_model" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_Model_Attachment" active="1" hint="XenForo_Model_Attachment" description="XenForo_Model_Attachment"/>
@@ -35,7 +227,9 @@
     <listener event_id="load_class_view" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_ViewAdmin_Log_ServerErrorView" active="1" hint="XenForo_ViewAdmin_Log_ServerErrorView" description="XenForo_ViewAdmin_Log_ServerErrorView"/>
     <listener event_id="template_file_change" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="template_file_change" active="1" hint="" description=""/>
   </code_event_listeners>
-  <cron/>
+  <cron>
+    <entry entry_id="bdcsh_statsAggregate" cron_class="bdCloudServerHelper_CronEntry_Stats" cron_method="aggregate" active="1"><![CDATA[{"day_type":"dom","dom":["-1"],"hours":["-1"],"minutes":["6"]}]]></entry>
+  </cron>
   <email_templates/>
   <email_template_modifications/>
   <optiongroups>
@@ -47,6 +241,12 @@ thread_view = {xen:phrase bdcsh_redis_thread_view}</edit_format_params>
       <sub_options>*</sub_options>
       <relation group_id="bdCloudServerHelper" display_order="10"/>
     </option>
+    <option option_id="bdcsh_redisStats" edit_format="onoff" data_type="unsigned_integer" can_backup="1">
+      <default_value>0</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="bdCloudServerHelper" display_order="20"/>
+    </option>
   </optiongroups>
   <permissions>
     <permission_groups/>
@@ -54,15 +254,29 @@ thread_view = {xen:phrase bdcsh_redis_thread_view}</edit_format_params>
     <interface_groups/>
   </permissions>
   <phrases>
+    <phrase title="bdcsh_cloud_current_stats_since_x" version_id="4" version_string="1.1.0"><![CDATA[Live stats since {time}]]></phrase>
+    <phrase title="bdcsh_cloud_stats" version_id="4" version_string="1.1.0"><![CDATA[Statistics]]></phrase>
+    <phrase title="bdcsh_cloud_stats_error" version_id="4" version_string="1.1.0"><![CDATA[Error]]></phrase>
+    <phrase title="bdcsh_cloud_stats_graph_from_x_to_y" version_id="4" version_string="1.1.0"><![CDATA[Graph from {from} to {to}]]></phrase>
+    <phrase title="bdcsh_cloud_stats_page_time_avg" version_id="4" version_string="1.1.0"><![CDATA[Average Page Time]]></phrase>
+    <phrase title="bdcsh_cloud_stats_success" version_id="4" version_string="1.1.0"><![CDATA[Success]]></phrase>
+    <phrase title="bdcsh_cloud_stats_total" version_id="4" version_string="1.1.0"><![CDATA[No. of requests]]></phrase>
     <phrase title="bdcsh_hostname" version_id="3" version_string="1.0.1"><![CDATA[Hostname]]></phrase>
     <phrase title="bdcsh_redis_attachment_view" version_id="1" version_string="0.9-dev"><![CDATA[Attachment View Logging]]></phrase>
     <phrase title="bdcsh_redis_thread_view" version_id="1" version_string="0.9-dev"><![CDATA[Thread View Logging]]></phrase>
+    <phrase title="cron_entry_bdcsh_statsAggregate" version_id="4" version_string="1.1.0"><![CDATA[[bd] Cloud Server Helper: Aggregate Stats Hourly]]></phrase>
     <phrase title="option_bdcsh_redis" version_id="1" version_string="0.9-dev"><![CDATA[Use Redis]]></phrase>
+    <phrase title="option_bdcsh_redisStats" version_id="4" version_string="1.1.0"><![CDATA[Save statistic data on Redis]]></phrase>
+    <phrase title="option_bdcsh_redisStats_explain" version_id="4" version_string="1.1.0"><![CDATA[]]></phrase>
     <phrase title="option_bdcsh_redis_explain" version_id="1" version_string="0.9-dev"><![CDATA[Check the boxes for functionalities for which you want to use Redis to handle (instead of default implementation). Note: config.php must be configured with at least <span style="font: Courier New">$config['bdCloudServerHelper_redis']['host'] = '127.0.0.1';</span> for this to work.]]></phrase>
     <phrase title="option_group_bdCloudServerHelper" version_id="1" version_string="0.9-dev"><![CDATA[[bd] Cloud Server Helper]]></phrase>
     <phrase title="option_group_bdCloudServerHelper_description" version_id="1" version_string="0.9-dev"><![CDATA[]]></phrase>
   </phrases>
-  <route_prefixes/>
+  <route_prefixes>
+    <route_type type="admin">
+      <prefix original_prefix="cloud" class="bdCloudServerHelper_Route_PrefixAdmin_Cloud" build_link="none"/>
+    </route_type>
+  </route_prefixes>
   <style_properties/>
   <templates/>
   <public_template_modifications/>
