@@ -5,10 +5,10 @@ class bdCloudServerHelper_Model_Stats extends XenForo_Model_Stats
     public function getStatsTypesSimple()
     {
         return array(
-            'bdcsh_stats_success',
-            'bdcsh_stats_4xx',
-            'bdcsh_stats_error',
             'bdcsh_stats_pageTime',
+            'bdcsh_stats_error',
+            'bdcsh_stats_4xx',
+            'bdcsh_stats_success',
         );
     }
 

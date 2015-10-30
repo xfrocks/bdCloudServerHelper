@@ -40,8 +40,15 @@ class bdCloudServerHelper_ControllerAdmin_Cloud extends XenForo_ControllerAdmin_
         $statsModel = $this->_getStatsModel();
         $statsTypes = $statsModel->getStatsTypesSimple();
 
-        $plots = $statsModel->getStatsData($start, $end, $statsTypes, $grouping);
+        $statsData = $statsModel->getStatsData($start, $end, $statsTypes, $grouping);
         $dateMap = array();
+
+        $plots = array();
+        foreach ($statsTypes as $type) {
+            if (isset($statsData[$type])) {
+                $plots[$type] = $statsData[$type];
+            }
+        }
 
         foreach ($plots AS $type => $plot) {
             $output = $statsModel->prepareGraphData($plot, $grouping);

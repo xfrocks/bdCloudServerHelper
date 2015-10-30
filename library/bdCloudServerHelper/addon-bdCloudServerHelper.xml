@@ -130,6 +130,7 @@
 </div>
 
 <xen:require js="js/flot/jquery.flot.min.js" />
+<xen:require js="js/flot/jquery.flot.stack.min.js" />
 <!--[if lte IE 8]><script src="js/flot/excanvas.min.js"></script><![endif]-->
 <script>
 
