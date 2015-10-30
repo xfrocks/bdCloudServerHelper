@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<addon addon_id="bdCloudServerHelper" title="[bd] Cloud Server Helper" version_string="1.2.3" version_id="8" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
+<addon addon_id="bdCloudServerHelper" title="[bd] Cloud Server Helper" version_string="1.3.0" version_id="9" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
   <admin_navigation/>
   <admin_permissions/>
   <admin_style_properties/>
@@ -310,8 +310,10 @@ jQuery(function()
     <listener event_id="front_controller_post_view" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="front_controller_post_view" active="1" hint="" description=""/>
     <listener event_id="front_controller_pre_view" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="front_controller_pre_view" active="1" hint="" description=""/>
     <listener event_id="init_dependencies" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="init_dependencies" active="1" hint="" description=""/>
+    <listener event_id="load_class_controller" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_ControllerPublic_Online" active="1" hint="XenForo_ControllerPublic_Online" description="XenForo_ControllerPublic_Online"/>
     <listener event_id="load_class_model" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_Model_Attachment" active="1" hint="XenForo_Model_Attachment" description="XenForo_Model_Attachment"/>
     <listener event_id="load_class_model" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_Model_Thread" active="1" hint="XenForo_Model_Thread" description="XenForo_Model_Thread"/>
+    <listener event_id="load_class_model" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_Model_Session" active="1" hint="XenForo_Model_Session" description="XenForo_Model_Session"/>
     <listener event_id="load_class_view" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_ViewAdmin_Log_ServerErrorView" active="1" hint="XenForo_ViewAdmin_Log_ServerErrorView" description="XenForo_ViewAdmin_Log_ServerErrorView"/>
     <listener event_id="template_file_change" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="template_file_change" active="1" hint="" description=""/>
   </code_event_listeners>
@@ -334,6 +336,12 @@ thread_view = {xen:phrase bdcsh_redis_thread_view}</edit_format_params>
       <edit_format_params></edit_format_params>
       <sub_options></sub_options>
       <relation group_id="bdCloudServerHelper" display_order="20"/>
+    </option>
+    <option option_id="bdcsh_voidSessionActivities" edit_format="onoff" data_type="unsigned_integer" can_backup="1">
+      <default_value>0</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="bdCloudServerHelper" display_order="100"/>
     </option>
   </optiongroups>
   <permissions>
@@ -361,7 +369,9 @@ thread_view = {xen:phrase bdcsh_redis_thread_view}</edit_format_params>
     <phrase title="option_bdcsh_redis" version_id="1" version_string="0.9-dev"><![CDATA[Use Redis]]></phrase>
     <phrase title="option_bdcsh_redisStats" version_id="4" version_string="1.1.0"><![CDATA[Save statistic data on Redis]]></phrase>
     <phrase title="option_bdcsh_redisStats_explain" version_id="4" version_string="1.1.0"><![CDATA[]]></phrase>
-    <phrase title="option_bdcsh_redis_explain" version_id="1" version_string="0.9-dev"><![CDATA[Check the boxes for functionalities for which you want to use Redis to handle (instead of default implementation). Note: config.php must be configured with at least <span style="font: Courier New">$config['bdCloudServerHelper_redis']['host'] = '127.0.0.1';</span> for this to work.]]></phrase>
+    <phrase title="option_bdcsh_redis_explain" version_id="8" version_string="1.2.3"><![CDATA[Check the boxes for functionalities for which you want to use Redis to handle (instead of default implementation). Note: config.php must be configured with at least <span style="font-family: Courier New">$config['bdCloudServerHelper_redis']['host'] = '127.0.0.1';</span> for this to work.]]></phrase>
+    <phrase title="option_bdcsh_voidSessionActivities" version_id="8" version_string="1.2.3"><![CDATA[Disable Getting Session Activities]]></phrase>
+    <phrase title="option_bdcsh_voidSessionActivities_explain" version_id="8" version_string="1.2.3"><![CDATA[Enable this option to return empty data for all calls to <span style="font-family: Courier New">XenForo_Model_Session::getSessionActivityRecords</span>. The sidebar block for online users and the Current Visitors page will be also disabled.]]></phrase>
     <phrase title="option_group_bdCloudServerHelper" version_id="1" version_string="0.9-dev"><![CDATA[[bd] Cloud Server Helper]]></phrase>
     <phrase title="option_group_bdCloudServerHelper_description" version_id="1" version_string="0.9-dev"><![CDATA[]]></phrase>
   </phrases>
@@ -372,7 +382,20 @@ thread_view = {xen:phrase bdcsh_redis_thread_view}</edit_format_params>
   </route_prefixes>
   <style_properties/>
   <templates/>
-  <public_template_modifications/>
+  <public_template_modifications>
+    <modification template="navigation" modification_key="bdcsh_navigation" description="Remove Current Visitors navbar link if needed." execution_order="10" enabled="1" action="str_replace">
+      <find><![CDATA[<li><a href="{xen:link online}">{xen:phrase current_visitors}</a></li>]]></find>
+      <replace><![CDATA[<xen:if is="!{$xenOptions.bdcsh_voidSessionActivities}">$0</xen:if>]]></replace>
+    </modification>
+    <modification template="sidebar_online_users" modification_key="bdcsh_sidebar_online_users" description="Remove Online Users sidebar block if needed." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#\A.+\z#s]]></find>
+      <replace><![CDATA[<xen:if is="{$xenOptions.bdcsh_voidSessionActivities}">
+	<xen:comment>Removed by [bd] Cloud Server Helper</xen:comment>
+<xen:else />
+	$0
+</xen:if>]]></replace>
+    </modification>
+  </public_template_modifications>
   <bb_code_media_sites/>
   <bb_codes/>
 </addon>

@@ -21,10 +21,24 @@ class bdCloudServerHelper_Listener
         $_POST['.hostname'] = gethostname();
     }
 
+    public static function load_class_XenForo_ControllerPublic_Online($class, array &$extend)
+    {
+        if ($class === 'XenForo_ControllerPublic_Online') {
+            $extend[] = 'bdCloudServerHelper_XenForo_ControllerPublic_Online';
+        }
+    }
+
     public static function load_class_XenForo_Model_Attachment($class, array &$extend)
     {
         if ($class === 'XenForo_Model_Attachment') {
             $extend[] = 'bdCloudServerHelper_XenForo_Model_Attachment';
+        }
+    }
+
+    public static function load_class_XenForo_Model_Session($class, array &$extend)
+    {
+        if ($class === 'XenForo_Model_Session') {
+            $extend[] = 'bdCloudServerHelper_XenForo_Model_Session';
         }
     }
 
