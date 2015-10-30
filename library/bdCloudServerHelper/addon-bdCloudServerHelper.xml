@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<addon addon_id="bdCloudServerHelper" title="[bd] Cloud Server Helper" version_string="1.2.1" version_id="6" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
+<addon addon_id="bdCloudServerHelper" title="[bd] Cloud Server Helper" version_string="1.2.2" version_id="7" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
   <admin_navigation/>
   <admin_permissions/>
   <admin_style_properties/>
@@ -78,7 +78,52 @@
 	</div>
 
 	<xen:form action="{xen:adminlink cloud/stats}">
+		
+		<script>
+		$(function()
+		{
+			$('#DatePresets').change(function(e)
+			{
+				var $ctrl = $(this),
+					value = $ctrl.val(),
+					$form = $ctrl.closest('form');
 
+				if (value == -1)
+				{
+					return;
+				}
+
+				$form.find($ctrl.data('start') || 'input[name=start]').val(value);
+				$form.find($ctrl.data('end') || 'input[name=end]').val('');
+				$form.submit();
+			});
+		});
+		</script>
+
+		<xen:controlunit label="">
+		<xen:html>
+				<xen:textbox name="start" value="{xen:date $start, 'Y-m-d'}" type="date" size="10" placeholder="{xen:phrase start_date}" />
+				-
+				<xen:textbox name="end" value="{xen:if $endDisplay, {xen:date $endDisplay, 'Y-m-d'}}" type="date" size="10" placeholder="{xen:phrase end_date}" />
+
+				<xen:select name="date_preset" value="-1" id="DatePresets" title="{xen:phrase show_statistics_from}" inputclass="autoSize Tooltip">
+					<xen:option value="-1">{xen:phrase date_presets}:</xen:option>
+					<xen:optgroup label="">
+						<xen:foreach loop="{$datePresets}" key="$offset" value="$phrase">
+							<xen:option value="{$offset}">{$phrase}</xen:option>
+						</xen:foreach>
+						<xen:option value="1995-01-01">{xen:phrase all_time}</xen:option>
+					</xen:optgroup>
+				</xen:select>
+			</xen:html>
+		</xen:controlunit>
+		
+		<xen:selectunit label="{xen:phrase bdcsh_cloud_stats_grouping}" name="grouping" value="{$grouping}" inputclass="autoSize">
+			<xen:option value="daily">{xen:phrase bdcsh_cloud_stats_grouping_daily}</xen:option>
+			<xen:option value="hourly">{xen:phrase bdcsh_cloud_stats_grouping_hourly}</xen:option>
+			<xen:option value="minutely">{xen:phrase bdcsh_cloud_stats_grouping_minutely}</xen:option>
+		</xen:selectunit>
+		
 		<xen:submitunit save="{xen:phrase show}" />
 
 	</xen:form>
@@ -97,22 +142,19 @@ jQuery(function()
 			<xen:if is="{$contentType} === 'bdcsh_stats_success'">
 			yaxis: 1,
 			color: "#4F8A10",
-			points: { show: true },
-			lines: { show: true },
+			bars: { show: true, fill: true },
 			<xen:elseif is="{$contentType} === 'bdcsh_stats_4xx'"/>
 			yaxis: 1,
 			color: "#FFF8C4",
-			points: { show: true },
-			lines: { show: true },
+			bars: { show: true, fill: true },
 			<xen:elseif is="{$contentType} === 'bdcsh_stats_error'"/>
 			yaxis: 1,
 			color: "#D8000C",
-			points: { show: true },
-			lines: { show: true },
+			bars: { show: true, fill: true },
 			<xen:else /><xen:comment>{$contentType} === 'bdcsh_stats_pageTime'</xen:comment>
 			yaxis: 2,
 			color: "#00529B",
-			bars: { show: true },
+			lines: { show: true, fill: true },
 			</xen:if>
 			label: "{xen:jsescape {$statsTypePhrases.{$contentType}}}",
 			contentType: "{xen:jsescape $contentType}",
@@ -123,6 +165,7 @@ jQuery(function()
 	],
 	options =
 	{
+		series: { stack: true },
 		grid:
 		{
 			show: true,
@@ -205,7 +248,9 @@ jQuery(function()
 	});
 });
 
-</script>]]></template>
+</script>
+
+<xen:edithint template="stats_base" />]]></template>
     <template title="bdcsh_cloud_stats_percent_x_of_y"><![CDATA[<xen:if is="{$y} > 0">
 	<span title="{xen:number $x}/{xen:number $y}" class="Tooltip">
 		{xen:number {xen:calc '{$x} / {$y} * 100'}, 2}%
@@ -277,6 +322,10 @@ thread_view = {xen:phrase bdcsh_redis_thread_view}</edit_format_params>
     <phrase title="bdcsh_cloud_stats_4xx" version_id="5" version_string="1.2.0"><![CDATA[Access Denied]]></phrase>
     <phrase title="bdcsh_cloud_stats_error" version_id="4" version_string="1.1.0"><![CDATA[Error]]></phrase>
     <phrase title="bdcsh_cloud_stats_graph_from_x_to_y" version_id="4" version_string="1.1.0"><![CDATA[Graph from {from} to {to}]]></phrase>
+    <phrase title="bdcsh_cloud_stats_grouping" version_id="6" version_string="1.2.1"><![CDATA[Grouping]]></phrase>
+    <phrase title="bdcsh_cloud_stats_grouping_daily" version_id="6" version_string="1.2.1"><![CDATA[Daily]]></phrase>
+    <phrase title="bdcsh_cloud_stats_grouping_hourly" version_id="6" version_string="1.2.1"><![CDATA[Hourly]]></phrase>
+    <phrase title="bdcsh_cloud_stats_grouping_minutely" version_id="6" version_string="1.2.1"><![CDATA[Detailed]]></phrase>
     <phrase title="bdcsh_cloud_stats_page_time_avg" version_id="4" version_string="1.1.0"><![CDATA[Average Page Time]]></phrase>
     <phrase title="bdcsh_cloud_stats_success" version_id="4" version_string="1.1.0"><![CDATA[Success]]></phrase>
     <phrase title="bdcsh_cloud_stats_total" version_id="4" version_string="1.1.0"><![CDATA[No. of requests]]></phrase>

@@ -4,9 +4,21 @@ class bdCloudServerHelper_ControllerAdmin_Cloud extends XenForo_ControllerAdmin_
 {
     public function actionStats()
     {
-        $end = XenForo_Application::$time;
-        $start = $end - 86400;
-        $viewParams = $this->getStatsData($start, $end, 'hourly');
+        $tz = new DateTimeZone(XenForo_Visitor::getInstance()->get('timezone'));
+
+        if (!$start = $this->_input->filterSingle('start', XenForo_Input::DATE_TIME, array('timeZone' => $tz))) {
+            $start = XenForo_Application::$time - 7200;
+        }
+
+        if (!$end = $this->_input->filterSingle('end', XenForo_Input::DATE_TIME, array('dayEnd' => true, 'timeZone' => $tz))) {
+            $end = XenForo_Application::$time;
+        }
+
+        $grouping = $this->_input->filterSingle('grouping', XenForo_Input::STRING, array(
+            'default' => 'minutely',
+        ));
+
+        $viewParams = $this->getStatsData($start, $end, $grouping);
 
         $currentSegment = bdCloudServerHelper_Helper_Stats::getSegment();
         $currentStats = bdCloudServerHelper_Helper_Stats::compileStatsForSegment($currentSegment);
@@ -23,7 +35,7 @@ class bdCloudServerHelper_ControllerAdmin_Cloud extends XenForo_ControllerAdmin_
         );
     }
 
-    public function getStatsData($start, $end, $grouping = 'hourly')
+    public function getStatsData($start, $end, $grouping)
     {
         $statsModel = $this->_getStatsModel();
         $statsTypes = $statsModel->getStatsTypesSimple();

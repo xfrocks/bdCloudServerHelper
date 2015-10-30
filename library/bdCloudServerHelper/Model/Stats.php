@@ -40,12 +40,6 @@ class bdCloudServerHelper_Model_Stats extends XenForo_Model_Stats
 
     public function prepareGraphData(array $data, $grouping = 'daily')
     {
-        if ($grouping !== 'hourly'
-            && $grouping !== 'minutely'
-        ) {
-            return parent::prepareGraphData($data, $grouping);
-        }
-
         $plot = array();
         $dateMap = array();
 
@@ -54,10 +48,11 @@ class bdCloudServerHelper_Model_Stats extends XenForo_Model_Stats
         $date = reset($keys);
         $maxDate = end($keys);
 
-        // stats are generated based on UTC
-        $utcTz = new DateTimeZone('UTC');
-
         switch ($grouping) {
+            case 'daily':
+                $dateFormat = 'd/m';
+                $dateStep = 86400;
+                break;
             case 'minutely':
                 $dateFormat = 'H:i';
                 $dateStep = 60;
@@ -68,13 +63,26 @@ class bdCloudServerHelper_Model_Stats extends XenForo_Model_Stats
                 $dateStep = 3600;
         }
 
+        // normalize the date values across plots
+        $date /= $dateStep;
+        $date = intval($date);
+        $date *= $dateStep;
+
         while ($date <= $maxDate) {
-            $dateMap[$date] = XenForo_Locale::date($date, $dateFormat, null, $utcTz);
+            $dateMap[$date] = XenForo_Locale::date($date, $dateFormat);
 
-            $value = (isset($data[$date]) ? $data[$date] : 0);
-            $plot[$date] = array($date, floatval($value));
+            $nextDate = $date + $dateStep;
+            $value = 0;
+            foreach ($keys as $key) {
+                if ($key >= $date
+                    && $key < $nextDate
+                ) {
+                    $value += floatval($data[$key]);
+                }
+            }
+            $plot[$date] = array($date, $value);
 
-            $date += $dateStep;
+            $date = $nextDate;
         }
 
         ksort($plot);
