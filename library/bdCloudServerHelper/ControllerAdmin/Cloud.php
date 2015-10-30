@@ -41,7 +41,6 @@ class bdCloudServerHelper_ControllerAdmin_Cloud extends XenForo_ControllerAdmin_
         $statsTypes = $statsModel->getStatsTypesSimple();
 
         $plots = $statsModel->getStatsData($start, $end, $statsTypes, $grouping);
-        $plots = $statsModel->preparePageTimeAvg($plots);
         $dateMap = array();
 
         foreach ($plots AS $type => $plot) {
@@ -59,7 +58,7 @@ class bdCloudServerHelper_ControllerAdmin_Cloud extends XenForo_ControllerAdmin_
         }
 
         $output = $statsModel->filterGraphDataDates($plots, $dateMap);
-        $plots = $output['plots'];
+        $plots = $statsModel->preparePageTimeAvg($output['plots']);
         $dateMap = $output['dateMap'];
 
         $viewParams = array(

@@ -15,23 +15,32 @@ class bdCloudServerHelper_Model_Stats extends XenForo_Model_Stats
     public function preparePageTimeAvg(array $plots)
     {
         if (!empty($plots['bdcsh_stats_pageTime'])) {
-            foreach ($plots['bdcsh_stats_pageTime'] as $segment => &$valueRef) {
-                $total = 0;
-                if (isset($plots['bdcsh_stats_success'][$segment])) {
-                    $total += $plots['bdcsh_stats_success'][$segment];
-                }
-                if (isset($plots['bdcsh_stats_4xx'][$segment])) {
-                    $total += $plots['bdcsh_stats_4xx'][$segment];
-                }
-                if (isset($plots['bdcsh_stats_error'][$segment])) {
-                    $total += $plots['bdcsh_stats_error'][$segment];
+            $total = array();
+
+            foreach ($plots as $type => $data) {
+                if ($type === 'bdcsh_stats_pageTime') {
+                    continue;
                 }
 
-                if ($total > 0) {
-                    $valueRef /= $total * bdCloudServerHelper_Helper_Stats::DAILY_STATS_MULTIPLIER_PAGE_TIME;
-                } else {
-                    $valueRef = 0;
+                foreach ($data as $_data) {
+                    if (!isset($total[$_data[0]])) {
+                        $total[$_data[0]] = 0;
+                    }
+                    $total[$_data[0]] += $_data[1];
                 }
+            }
+
+            foreach ($plots['bdcsh_stats_pageTime'] as &$_dataRef) {
+                $avg = 0;
+
+                if (isset($total[$_dataRef[0]])
+                    && $total[$_dataRef[0]] > 0
+                ) {
+                    $avg = $_dataRef[1] / $total[$_dataRef[0]];
+                    $avg /= bdCloudServerHelper_Helper_Stats::DAILY_STATS_MULTIPLIER_PAGE_TIME;
+                }
+
+                $_dataRef[1] = $avg;
             }
         }
 
