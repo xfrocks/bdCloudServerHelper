@@ -55,7 +55,7 @@ class bdCloudServerHelper_Model_Stats extends XenForo_Model_Stats
                 break;
             case 'minutely':
                 $dateFormat = 'H:i';
-                $dateStep = 60;
+                $dateStep = bdCloudServerHelper_Helper_Stats::STATS_BLOCK_IN_SECONDS;
                 break;
             case 'hourly':
             default:

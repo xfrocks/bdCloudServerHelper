@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<addon addon_id="bdCloudServerHelper" title="[bd] Cloud Server Helper" version_string="1.2.2" version_id="7" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
+<addon addon_id="bdCloudServerHelper" title="[bd] Cloud Server Helper" version_string="1.2.3" version_id="8" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
   <admin_navigation/>
   <admin_permissions/>
   <admin_style_properties/>
@@ -135,6 +135,19 @@
 
 jQuery(function()
 {
+	var formatterCount = function(value) {
+		if (value > 1000000) {
+			return (Math.round(value / 1000000 * 10) / 10) + 'm';
+		} else if (value > 1000) {
+			return (Math.round(value / 1000 * 10) / 10) + 'k';
+		} else {
+			return value;
+		}
+	};
+	var formatterTime = function(value) {
+		return (Math.round(value * 100) / 100) + 's';
+	}
+	
 	var data =
 	[
 	<xen:foreach loop="$plots" key="$contentType" value="$plot" i="$i">
@@ -201,7 +214,7 @@ jQuery(function()
 			{
 				position: 'right',
 				tickFormatter: function(s) {
-					return (Math.round(s * 100) / 100) + 's'
+					return formatterTime(s);
 				}
 			}
 		]
@@ -223,10 +236,22 @@ jQuery(function()
 					dateString = dateMap[item.series.contentType][item.datapoint[0]]
 						|| dateMap[item.series.contentType][item.datapoint[0] / 1000]  
 						|| new Date(item.datapoint[0]).toDateString();
+				
+				var dataPoint = item.datapoint[1];
+				if (item.series.contentType)
+				{
+					switch (item.series.contentType) {
+						case 'bdcsh_stats_pageTime':
+							dataPoint = formatterTime(dataPoint);
+							break;
+						default:
+							dataPoint = formatterCount(dataPoint);
+					}
+				}
 									
 				prevDataIndex = item.dataIndex;
 				
-				$tooltip.hide().find('span.text').html(dateString + ', ' + item.series.label + ': ' + new String(item.datapoint[1]).bold());
+				$tooltip.hide().find('span.text').html(dateString + ', ' + item.series.label + ': ' + new String(dataPoint).bold());
 								
 				$tooltip.css(
 				{
