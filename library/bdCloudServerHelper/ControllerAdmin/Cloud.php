@@ -35,6 +35,27 @@ class bdCloudServerHelper_ControllerAdmin_Cloud extends XenForo_ControllerAdmin_
         );
     }
 
+    public function actionStatsLive()
+    {
+        $this->_assertPostOnly();
+
+        $currentSegment = bdCloudServerHelper_Helper_Stats::getSegment();
+        $currentStats = bdCloudServerHelper_Helper_Stats::compileStatsForSegment($currentSegment);
+
+        $viewParams = array(
+            'currentSegment' => $currentSegment,
+            'currentStats' => $currentStats,
+            'hostname' => gethostname(),
+            'loadavg' => sys_getloadavg(),
+        );
+
+        return $this->responseView(
+            'bdCloudServerHelper_ViewAdmin_Cloud_StatsLive',
+            '',
+            $viewParams
+        );
+    }
+
     public function getStatsData($start, $end, $grouping)
     {
         $statsModel = $this->_getStatsModel();

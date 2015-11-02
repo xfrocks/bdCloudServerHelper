@@ -3,3 +3,4 @@
 library/bdCloudServerHelper/DevHelper/Generated
 library/bdCloudServerHelper/DevHelper/XFCP
 FileSums.php
+js/bdCloudServerHelper/*.js

@@ -68,29 +68,30 @@ class bdCloudServerHelper_Helper_Stats
             '4xx' => 0,
             'error' => 0,
             'total' => 0,
+            'pageTime' => 0,
             'pageTime_avg' => 0,
         );
 
-        $total = 0;
         if (isset($successCounters[$segment])) {
-            $stats['success'] = $successCounters[$segment];
-            $total += $stats['success'];
+            $stats['success'] = intval($successCounters[$segment]);
+            $stats['total'] += $stats['success'];
         }
         if (isset($_4xxCounters[$segment])) {
-            $stats['4xx'] = $_4xxCounters[$segment];
-            $total += $stats['4xx'];
+            $stats['4xx'] = intval($_4xxCounters[$segment]);
+            $stats['total'] += $stats['4xx'];
         }
         if (isset($errorCounters[$segment])) {
-            $stats['error'] = $errorCounters[$segment];
-            $total += $stats['error'];
+            $stats['error'] = intval($errorCounters[$segment]);
+            $stats['total'] += $stats['error'];
+        }
+        if (isset($pageTimes[$segment])) {
+            $stats['pageTime'] = floatval($pageTimes[$segment]);
         }
 
-        if ($total > 0) {
-            $stats['total'] = $total;
-
-            if (isset($pageTimes[$segment])) {
-                $stats['pageTime_avg'] = $pageTimes[$segment] / $stats['total'];
-            }
+        if ($stats['total'] > 0
+            && $stats['pageTime'] > 0
+        ) {
+            $stats['pageTime_avg'] = $stats['pageTime'] / $stats['total'];
         }
 
         return $stats;

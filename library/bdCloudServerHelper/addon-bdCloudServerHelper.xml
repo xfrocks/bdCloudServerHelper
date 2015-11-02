@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<addon addon_id="bdCloudServerHelper" title="[bd] Cloud Server Helper" version_string="1.3.1" version_id="10" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
+<addon addon_id="bdCloudServerHelper" title="[bd] Cloud Server Helper" version_string="1.3.2" version_id="11" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
   <admin_navigation/>
   <admin_permissions/>
   <admin_style_properties/>
@@ -10,7 +10,7 @@
 	margin: 0.5em 0;
 }
 
-.currentStats
+.currentStats, .loadavgs
 {
 	font-size: 1.5em;
 	max-width: 400px;
@@ -22,18 +22,24 @@
 	opacity: 0 !important
 }]]></template>
     <template title="bdcsh_cloud_stats"><![CDATA[<xen:require css="bdcsh.css" />
+<xen:require js="js/bdCloudServerHelper/stats.js" />
 
 <xen:title>{xen:phrase bdcsh_cloud_stats}</xen:title>
 
 <h2>{xen:phrase bdcsh_cloud_current_stats_since_x, 'time={xen:time $currentSegment}'}</h2>
-<div class="currentStats">
+<div class="currentStats"
+	 data-disabled-text="{xen:if '{$debugMode}', '', {xen:phrase bdcsh_live_update_disabled}}"
+	 data-delay="1000"
+	 data-loadavgs-selector=".loadavgs"
+	 data-segment="{$currentSegment}"
+	 data-url="{xen:adminlink cloud/stats/live}">
 	<dl class="pairsJustified total">
 		<dt>{xen:phrase bdcsh_cloud_stats_total}:</dt>
-		<dd>
+		<dd class="value">
 			{xen:number $currentStats.total}
 		</dd>
 	</dl>
-	<dl class="pairsJustified success">
+	<dl class="pairsJustified success" data-value="{$currentStats.success}">
 		<dt>{xen:phrase bdcsh_cloud_stats_success}:</dt>
 		<dd>
 			<xen:include template="bdcsh_cloud_stats_percent_x_of_y">
@@ -42,7 +48,7 @@
 			</xen:include>
 		</dd>
 	</dl>
-	<dl class="pairsJustified 4xx">
+	<dl class="pairsJustified 4xx" data-value="{$currentStats.4xx}">
 		<dt>{xen:phrase bdcsh_cloud_stats_4xx}:</dt>
 		<dd>
 			<xen:include template="bdcsh_cloud_stats_percent_x_of_y">
@@ -51,7 +57,7 @@
 			</xen:include>
 		</dd>
 	</dl>
-	<dl class="pairsJustified error">
+	<dl class="pairsJustified error" data-value="{$currentStats.error}">
 		<dt>{xen:phrase bdcsh_cloud_stats_error}:</dt>
 		<dd>
 			<xen:include template="bdcsh_cloud_stats_percent_x_of_y">
@@ -61,10 +67,12 @@
 		</dd>
 	</dl>
 
-	<dl class="pairsJustified pageTime_avg">
+	<dl class="pairsJustified pageTime" data-value="{$currentStats.pageTime}">
 		<dt>{xen:phrase bdcsh_cloud_stats_page_time_avg}:</dt>
-		<dd>{xen:number $currentStats.pageTime_avg, 5}</dd>
+		<dd class="value">{xen:number $currentStats.pageTime_avg, 5}s</dd>
 	</dl>
+</div>
+<div class="loadavgs">
 </div>
 
 <h2>{xen:phrase bdcsh_cloud_stats_graph_from_x_to_y,
@@ -136,19 +144,6 @@
 
 jQuery(function()
 {
-	var formatterCount = function(value) {
-		if (value > 1000000) {
-			return (Math.round(value / 1000000 * 10) / 10) + 'm';
-		} else if (value > 1000) {
-			return (Math.round(value / 1000 * 10) / 10) + 'k';
-		} else {
-			return value;
-		}
-	};
-	var formatterTime = function(value) {
-		return (Math.round(value * 100) / 100) + 's';
-	}
-	
 	var data =
 	[
 	<xen:foreach loop="$plots" key="$contentType" value="$plot" i="$i">
@@ -210,12 +205,16 @@ jQuery(function()
 		yaxes: [
 			{
 				position: 'left',
-				tickDecimals: 0
+				tickFormatter: function(s) {
+					<xen:comment>window.formatCount is defined in stats.js</xen:comment>
+					return window.formatCount(s);
+				}
 			},
 			{
 				position: 'right',
 				tickFormatter: function(s) {
-					return formatterTime(s);
+					<xen:comment>window.formatTime is defined in stats.js</xen:comment>
+					return window.formatTime(s);
 				}
 			}
 		]
@@ -224,7 +223,7 @@ jQuery(function()
 	$tooltip = $('#StatsTooltip').appendTo('body').css('position', 'absolute'),
 	prevDataIndex = null,
 	dateMap = {xen:helper json, $dateMap};
-	
+
 	$.plot($placeholder, data, options);
 	
 	$placeholder.bind('plothover', function(e, pos, item)
@@ -238,15 +237,20 @@ jQuery(function()
 						|| dateMap[item.series.contentType][item.datapoint[0] / 1000]  
 						|| new Date(item.datapoint[0]).toDateString();
 				
-				var dataPoint = item.datapoint[1];
+				// var dataPoint = item.datapoint[1];
+				// item.datapoint[1] value is incorrect according to this
+				// https://github.com/krzysu/flot.tooltip/issues/3
+				var dataPoint = item.series.data[item.dataIndex][1];
 				if (item.series.contentType)
 				{
 					switch (item.series.contentType) {
 						case 'bdcsh_stats_pageTime':
-							dataPoint = formatterTime(dataPoint);
+							<xen:comment>window.formatTime is defined in stats.js</xen:comment>
+							dataPoint = window.formatTime(dataPoint);
 							break;
 						default:
-							dataPoint = formatterCount(dataPoint);
+							<xen:comment>window.formatCount is defined in stats.js</xen:comment>
+							dataPoint = window.formatCount(dataPoint);
 					}
 				}
 									
@@ -277,13 +281,14 @@ jQuery(function()
 </script>
 
 <xen:edithint template="stats_base" />]]></template>
-    <template title="bdcsh_cloud_stats_percent_x_of_y"><![CDATA[<xen:if is="{$y} > 0">
-	<span title="{xen:number $x}/{xen:number $y}" class="Tooltip">
+    <template title="bdcsh_cloud_stats_percent_x_of_y"><![CDATA[<span class="percent value">
+	<xen:if is="{$y} > 0">
 		{xen:number {xen:calc '{$x} / {$y} * 100'}, 2}%
-	</span>
-<xen:else />
-	{xen:number $x}/{xen:number $y}
-</xen:if>]]></template>
+		({xen:number $x}/{xen:number $y})
+	<xen:else />
+		{xen:number $x}/{xen:number $y}
+	</xen:if>
+</span>]]></template>
     <template title="bdcsh_log_server_error_view"><![CDATA[<xen:if hascontent="true">
 	<tr>
 		<th class="subHeading">{xen:phrase bdcsh_hostname}</th>
@@ -364,6 +369,7 @@ thread_view = {xen:phrase bdcsh_redis_thread_view}</edit_format_params>
     <phrase title="bdcsh_cloud_stats_success" version_id="4" version_string="1.1.0"><![CDATA[Success]]></phrase>
     <phrase title="bdcsh_cloud_stats_total" version_id="4" version_string="1.1.0"><![CDATA[No. of requests]]></phrase>
     <phrase title="bdcsh_hostname" version_id="3" version_string="1.0.1"><![CDATA[Hostname]]></phrase>
+    <phrase title="bdcsh_live_update_disabled" version_id="10" version_string="1.3.1"><![CDATA[Live Update is disabled]]></phrase>
     <phrase title="bdcsh_redis_attachment_view" version_id="1" version_string="0.9-dev"><![CDATA[Attachment View Logging]]></phrase>
     <phrase title="bdcsh_redis_thread_view" version_id="1" version_string="0.9-dev"><![CDATA[Thread View Logging]]></phrase>
     <phrase title="cron_entry_bdcsh_statsAggregate" version_id="4" version_string="1.1.0"><![CDATA[[bd] Cloud Server Helper: Aggregate Stats Hourly]]></phrase>
