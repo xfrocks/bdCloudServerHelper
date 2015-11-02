@@ -324,11 +324,13 @@ jQuery(function()
     <listener event_id="load_class_model" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_Model_Attachment" active="1" hint="XenForo_Model_Attachment" description="XenForo_Model_Attachment"/>
     <listener event_id="load_class_model" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_Model_Thread" active="1" hint="XenForo_Model_Thread" description="XenForo_Model_Thread"/>
     <listener event_id="load_class_model" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_Model_Session" active="1" hint="XenForo_Model_Session" description="XenForo_Model_Session"/>
+    <listener event_id="load_class_model" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_Model_ImageProxy" active="1" hint="XenForo_Model_ImageProxy" description="XenForo_Model_ImageProxy"/>
     <listener event_id="load_class_view" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_ViewAdmin_Log_ServerErrorView" active="1" hint="XenForo_ViewAdmin_Log_ServerErrorView" description="XenForo_ViewAdmin_Log_ServerErrorView"/>
     <listener event_id="template_file_change" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="template_file_change" active="1" hint="" description=""/>
   </code_event_listeners>
   <cron>
     <entry entry_id="bdcsh_statsAggregate" cron_class="bdCloudServerHelper_CronEntry_Stats" cron_method="aggregate" active="1"><![CDATA[{"day_type":"dom","dom":["-1"],"hours":["-1"],"minutes":["6"]}]]></entry>
+    <entry entry_id="bdcsh_viewsUpdate" cron_class="bdCloudServerHelper_CronEntry_Views" cron_method="update" active="1"><![CDATA[{"day_type":"dom","dom":["-1"],"hours":["-1"],"minutes":["29"]}]]></entry>
   </cron>
   <email_templates/>
   <email_template_modifications/>
@@ -337,7 +339,8 @@ jQuery(function()
     <option option_id="bdcsh_redis" edit_format="checkbox" data_type="array" can_backup="1">
       <default_value></default_value>
       <edit_format_params>attachment_view = {xen:phrase bdcsh_redis_attachment_view}
-thread_view = {xen:phrase bdcsh_redis_thread_view}</edit_format_params>
+thread_view = {xen:phrase bdcsh_redis_thread_view}
+image_proxy_view = {xen:phrase bdcsh_redis_image_proxy_view}</edit_format_params>
       <sub_options>*</sub_options>
       <relation group_id="bdCloudServerHelper" display_order="10"/>
     </option>
@@ -375,8 +378,10 @@ thread_view = {xen:phrase bdcsh_redis_thread_view}</edit_format_params>
     <phrase title="bdcsh_hostname" version_id="3" version_string="1.0.1"><![CDATA[Hostname]]></phrase>
     <phrase title="bdcsh_live_update_disabled" version_id="10" version_string="1.3.1"><![CDATA[Live Update is disabled]]></phrase>
     <phrase title="bdcsh_redis_attachment_view" version_id="1" version_string="0.9-dev"><![CDATA[Attachment View Logging]]></phrase>
+    <phrase title="bdcsh_redis_image_proxy_view" version_id="11" version_string="1.3.2"><![CDATA[Image Proxy View Logging]]></phrase>
     <phrase title="bdcsh_redis_thread_view" version_id="1" version_string="0.9-dev"><![CDATA[Thread View Logging]]></phrase>
     <phrase title="cron_entry_bdcsh_statsAggregate" version_id="4" version_string="1.1.0"><![CDATA[[bd] Cloud Server Helper: Aggregate Stats Hourly]]></phrase>
+    <phrase title="cron_entry_bdcsh_viewsUpdate" version_id="11" version_string="1.3.2"><![CDATA[[bd] Cloud Server Helper: Update View Counters]]></phrase>
     <phrase title="option_bdcsh_redis" version_id="1" version_string="0.9-dev"><![CDATA[Use Redis]]></phrase>
     <phrase title="option_bdcsh_redisStats" version_id="4" version_string="1.1.0"><![CDATA[Save statistic data on Redis]]></phrase>
     <phrase title="option_bdcsh_redisStats_explain" version_id="4" version_string="1.1.0"><![CDATA[]]></phrase>

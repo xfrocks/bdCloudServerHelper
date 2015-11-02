@@ -35,6 +35,13 @@ class bdCloudServerHelper_Listener
         }
     }
 
+    public static function load_class_XenForo_Model_ImageProxy($class, array &$extend)
+    {
+        if ($class === 'XenForo_Model_ImageProxy') {
+            $extend[] = 'bdCloudServerHelper_XenForo_Model_ImageProxy';
+        }
+    }
+
     public static function load_class_XenForo_Model_Session($class, array &$extend)
     {
         if ($class === 'XenForo_Model_Session') {
