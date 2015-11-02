@@ -73,6 +73,10 @@
 	</dl>
 </div>
 <div class="loadavgs">
+	<dl class="pairsJustified" data-hostname="{$hostname}">
+		<dt>{$hostname}</dt>
+		<dd class="value"><xen:foreach loop="$loadavg" value="$_loadavg">{$_loadavg} </xen:foreach></dd>
+	</dl>
 </div>
 
 <h2>{xen:phrase bdcsh_cloud_stats_graph_from_x_to_y,
@@ -284,7 +288,7 @@ jQuery(function()
     <template title="bdcsh_cloud_stats_percent_x_of_y"><![CDATA[<span class="percent value">
 	<xen:if is="{$y} > 0">
 		{xen:number {xen:calc '{$x} / {$y} * 100'}, 2}%
-		({xen:number $x}/{xen:number $y})
+		({xen:number $x})
 	<xen:else />
 		{xen:number $x}/{xen:number $y}
 	</xen:if>

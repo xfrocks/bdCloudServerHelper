@@ -26,6 +26,8 @@ class bdCloudServerHelper_ControllerAdmin_Cloud extends XenForo_ControllerAdmin_
         $viewParams = array_merge($viewParams, array(
             'currentSegment' => $currentSegment,
             'currentStats' => $currentStats,
+            'hostname' => gethostname(),
+            'loadavg' => sys_getloadavg(),
         ));
 
         return $this->responseView(

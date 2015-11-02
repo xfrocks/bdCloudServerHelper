@@ -156,9 +156,12 @@
                         break;
                     default:
                         if ($value.is('.percent')) {
-                            value = window.formatPercent(value, total)
-                                + '% (' + window.formatCount(value)
-                                + '/' + window.formatCount(total) + ')';
+                            if (total > 0) {
+                                value = window.formatPercent(value, total)
+                                    + '% (' + window.formatCount(value) + ')';
+                            } else {
+                                value = window.formatCount(value) + '/' + window.formatCount(total);
+                            }
                         } else {
                             value = window.formatCount(value);
                         }
