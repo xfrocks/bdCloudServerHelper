@@ -85,7 +85,7 @@ class bdCloudServerHelper_Listener
         if (XenForo_Application::getOptions()->get('templateFiles')
             && $fc->getDependencies() instanceof XenForo_Dependencies_Public
         ) {
-            bdCloudServerHelper_Helper_Template::makeSureTemplatesAreUpToDate();
+            bdCloudServerHelper_Helper_Template::makeSureTemplatesAreUpToDate($fc);
         }
 
         if (XenForo_Application::debugMode()) {

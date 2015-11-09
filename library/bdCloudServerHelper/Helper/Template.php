@@ -3,22 +3,37 @@
 class bdCloudServerHelper_Helper_Template
 {
     protected static $_templatesUpdated = 0;
+    protected static $_templatesIsUpdating = false;
 
     /**
      * Generates script to keep track of last updated time of templates directory.
+     * @param bool $isUpdating
      */
-    public static function markTemplatesAsUpdated()
+    public static function markTemplatesAsUpdated($isUpdating = false)
     {
         file_put_contents(self::_getTemplatesUpdatedScriptPath(), sprintf(
-            "<?php\nbdCloudServerHelper_Helper_Template::setTemplatesUpdated(%s);",
-            var_export(time(), true)
+            "<?php\nbdCloudServerHelper_Helper_Template::setTemplatesUpdated(%s, %s);",
+            var_export(time(), true),
+            $isUpdating ? 'true' : 'false'
         ), LOCK_EX);
     }
 
-    public static function makeSureTemplatesAreUpToDate()
+    public static function makeSureTemplatesAreUpToDate(XenForo_FrontController $fc = null)
     {
         /** @noinspection PhpIncludeInspection */
         @include(self::_getTemplatesUpdatedScriptPath());
+
+        if (self::$_templatesIsUpdating) {
+            // templates are being updated
+            // temporary switch to use db
+            XenForo_Application::getOptions()->set('templateFiles', false);
+
+            if (XenForo_Application::debugMode()
+                && $fc != null
+            ) {
+                $fc->getResponse()->setHeader('X-Templates-Files-Updating', 'yes');
+            }
+        }
 
         $lastMod = 0;
         $visitor = XenForo_Visitor::getInstance();
@@ -38,11 +53,26 @@ class bdCloudServerHelper_Helper_Template
 
         if (self::$_templatesUpdated < $lastMod) {
             // mark it first to avoid concurrent requests all trying to rebuild
-            self::markTemplatesAsUpdated();
+            self::markTemplatesAsUpdated(true);
 
             /** @var XenForo_Model_Template $templateModel */
             $templateModel = XenForo_Model::create('XenForo_Model_Template');
             $templateModel->writeTemplateFiles(false, false);
+
+            self::markTemplatesAsUpdated(false);
+
+            if (XenForo_Application::debugMode()
+                && $fc != null
+            ) {
+                $fc->getResponse()->setHeader('X-Templates-Files-Updated', 'yes');
+            }
+        }
+
+        if (XenForo_Application::debugMode()
+            && $fc != null
+        ) {
+            $fc->getResponse()->setHeader('X-Templates-From-Files',
+                XenForo_Application::getOptions()->get('templateFiles') ? 'yes' : 'no');
         }
     }
 
@@ -50,11 +80,13 @@ class bdCloudServerHelper_Helper_Template
      * Sets updated timestamp for templates directory.
      * This method should only be called from our auto-generated script.
      *
-     * @param $timestamp
+     * @param int $timestamp
+     * @param bool $isUpdating
      */
-    public static function setTemplatesUpdated($timestamp)
+    public static function setTemplatesUpdated($timestamp, $isUpdating = false)
     {
         self::$_templatesUpdated = max(self::$_templatesUpdated, $timestamp);
+        self::$_templatesIsUpdating = self::$_templatesIsUpdating || $isUpdating;
     }
 
     protected static function _getTemplatesUpdatedScriptPath()
