@@ -28,6 +28,13 @@ class bdCloudServerHelper_Listener
         }
     }
 
+    public static function load_class_XenForo_CssOutput($class, array &$extend)
+    {
+        if ($class === 'XenForo_CssOutput') {
+            $extend[] = 'bdCloudServerHelper_XenForo_CssOutput';
+        }
+    }
+
     public static function load_class_XenForo_Model_Attachment($class, array &$extend)
     {
         if ($class === 'XenForo_Model_Attachment') {
