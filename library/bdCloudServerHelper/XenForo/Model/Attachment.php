@@ -22,11 +22,16 @@ class bdCloudServerHelper_XenForo_Model_Attachment extends XFCP_bdCloudServerHel
             $db = $this->_getDb();
 
             foreach ($values as $attachmentId => $value) {
-                $db->query('
-                    UPDATE xf_attachment
-                    SET view_count = view_count + ?
-                    WHERE attachment_id = ?
-                ', array($value, $attachmentId));
+                try {
+                    $db->query('
+                        UPDATE xf_attachment
+                        SET view_count = view_count + ?
+                        WHERE attachment_id = ?
+                    ', array($value, $attachmentId));
+                } catch (Zend_Db_Exception $e) {
+                    // stop running, for now
+                    return;
+                }
 
                 bdCloudServerHelper_Helper_Redis::clearCounter('attachment_view', $attachmentId);
             }

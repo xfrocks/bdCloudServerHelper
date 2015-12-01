@@ -10,10 +10,15 @@ class bdCloudServerHelper_XenForo_Model_Session extends XFCP_bdCloudServerHelper
             $db = $this->_getDb();
 
             foreach ($values as $userId => $timestamp) {
-                $db->update('xf_user',
-                    array('last_activity' => $timestamp),
-                    array('user_id = ?' => $userId)
-                );
+                try {
+                    $db->update('xf_user',
+                        array('last_activity' => $timestamp),
+                        array('user_id = ?' => $userId)
+                    );
+                } catch (Zend_Db_Exception $e) {
+                    // stop running, for now
+                    return;
+                }
 
                 bdCloudServerHelper_Helper_Redis::clearCounter('session_activity', $userId);
             }

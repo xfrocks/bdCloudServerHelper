@@ -22,11 +22,16 @@ class bdCloudServerHelper_XenForo_Model_Thread extends XFCP_bdCloudServerHelper_
             $db = $this->_getDb();
 
             foreach ($values as $threadId => $value) {
-                $db->query('
-                    UPDATE xf_thread
-                    SET view_count = view_count + ?
-                    WHERE thread_id = ?
-                ', array($value, $threadId));
+                try {
+                    $db->query('
+                        UPDATE xf_thread
+                        SET view_count = view_count + ?
+                        WHERE thread_id = ?
+                    ', array($value, $threadId));
+                } catch (Zend_Db_Exception $e) {
+                    // stop running, for now
+                    return;
+                }
 
                 bdCloudServerHelper_Helper_Redis::clearCounter('thread_view', $threadId);
             }
