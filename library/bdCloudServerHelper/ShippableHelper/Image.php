@@ -1,10 +1,10 @@
 <?php
 
-// updated by DevHelper_Helper_ShippableHelper at 2015-12-01T16:24:03+00:00
+// updated by DevHelper_Helper_ShippableHelper at 2015-12-01T17:29:18+00:00
 
 /**
  * Class bdCloudServerHelper_ShippableHelper_Image
- * @version 3
+ * @version 4
  * @see DevHelper_Helper_ShippableHelper_Image
  */
 class bdCloudServerHelper_ShippableHelper_Image
@@ -61,6 +61,7 @@ class bdCloudServerHelper_ShippableHelper_Image
             // could not open the image, create a new image
             $longer = max($width, $height);
             $image = XenForo_Image_Abstract::createImage($longer, $longer);
+            $imageInfo['typeInt'] = IMAGETYPE_PNG;
         }
 
         if ($width === '' && $height > 0) {
@@ -106,6 +107,8 @@ class bdCloudServerHelper_ShippableHelper_Image
 
         XenForo_Helper_File::createDirectory(dirname($thumbnailPath), true);
         $outputPath = tempnam(XenForo_Helper_File::getTempDir(), __CLASS__);
+
+        /** @noinspection PhpParamsInspection */
         $image->output($imageInfo['typeInt'], $outputPath);
         XenForo_Helper_File::safeRename($outputPath, $thumbnailPath);
 
