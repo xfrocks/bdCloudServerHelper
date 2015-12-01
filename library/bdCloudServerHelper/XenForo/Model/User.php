@@ -32,16 +32,14 @@ class bdCloudServerHelper_XenForo_Model_User extends XFCP_bdCloudServerHelper_Xe
 
     public function updateSessionActivity($userId, $ip, $controllerName, $action, $viewState, array $inputParams, $viewDate = null, $robotKey = '')
     {
-        $userId = intval($userId);
-
-        if ($userId > 0
-            && bdCloudServerHelper_Option::get('redis', 'session_activity')
-        ) {
-            if (!$viewDate) {
-                $viewDate = XenForo_Application::$time;
+        if (bdCloudServerHelper_Option::get('redis', 'session_activity')) {
+            $userId = intval($userId);
+            if ($userId > 0) {
+                if (!$viewDate) {
+                    $viewDate = XenForo_Application::$time;
+                }
+                bdCloudServerHelper_Helper_Redis::setCounter('session_activity', $userId, $viewDate);
             }
-
-            bdCloudServerHelper_Helper_Redis::setCounter('session_activity', $userId, $viewDate);
 
             // prevent the default tracking mechanism
             return;
