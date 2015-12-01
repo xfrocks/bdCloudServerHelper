@@ -21,13 +21,6 @@ class bdCloudServerHelper_Listener
         $_POST['.hostname'] = gethostname();
     }
 
-    public static function load_class_XenForo_ControllerPublic_Online($class, array &$extend)
-    {
-        if ($class === 'XenForo_ControllerPublic_Online') {
-            $extend[] = 'bdCloudServerHelper_XenForo_ControllerPublic_Online';
-        }
-    }
-
     public static function load_class_XenForo_CssOutput($class, array &$extend)
     {
         if ($class === 'XenForo_CssOutput') {
@@ -74,6 +67,13 @@ class bdCloudServerHelper_Listener
     {
         if ($class === 'XenForo_BbCode_Formatter_Base') {
             $extend[] = 'bdCloudServerHelper_XenForo_BbCode_Formatter_Base';
+        }
+    }
+
+    public static function load_class_XenForo_Model_User($class, array &$extend)
+    {
+        if ($class === 'XenForo_Model_User') {
+            $extend[] = 'bdCloudServerHelper_XenForo_Model_User';
         }
     }
 

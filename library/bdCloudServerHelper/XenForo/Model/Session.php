@@ -2,13 +2,25 @@
 
 class bdCloudServerHelper_XenForo_Model_Session extends XFCP_bdCloudServerHelper_XenForo_Model_Session
 {
-    public function getSessionActivityRecords(array $conditions = array(), array $fetchOptions = array())
+    public function updateUserLastActivityFromSessions($cutOffDate = null)
     {
-        if (bdCloudServerHelper_Option::get('voidSessionActivities')) {
-            return array();
+        if (bdCloudServerHelper_Option::get('redis', 'session_activity')) {
+            $values = bdCloudServerHelper_Helper_Redis::getCounters('session_activity');
+
+            $db = $this->_getDb();
+
+            foreach ($values as $userId => $timestamp) {
+                $db->update('xf_user',
+                    array('last_activity' => $timestamp),
+                    array('user_id = ?' => $userId)
+                );
+
+                bdCloudServerHelper_Helper_Redis::clearCounter('session_activity', $userId);
+            }
         }
 
-        return parent::getSessionActivityRecords($conditions, $fetchOptions);
+        // still let the default method run to handle left over data
+        parent::updateUserLastActivityFromSessions($cutOffDate);
     }
 
 }

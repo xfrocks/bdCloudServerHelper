@@ -80,6 +80,16 @@ class bdCloudServerHelper_Helper_Redis
         }
     }
 
+    public static function setCounter($type, $varName, $varValue)
+    {
+        $redis = self::getConnection();
+        if ($redis === false) {
+            return 0;
+        }
+
+        return $redis->hSet(self::getHashKey($type), $varName, $varValue);
+    }
+
     public static function getCounters($type)
     {
         $redis = self::getConnection();
