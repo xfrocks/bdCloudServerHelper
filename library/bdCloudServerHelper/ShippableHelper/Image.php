@@ -1,10 +1,10 @@
 <?php
 
-// updated by DevHelper_Helper_ShippableHelper at 2015-12-01T17:29:18+00:00
+// updated by DevHelper_Helper_ShippableHelper at 2015-12-01T17:41:33+00:00
 
 /**
  * Class bdCloudServerHelper_ShippableHelper_Image
- * @version 4
+ * @version 5
  * @see DevHelper_Helper_ShippableHelper_Image
  */
 class bdCloudServerHelper_ShippableHelper_Image
@@ -27,15 +27,14 @@ class bdCloudServerHelper_ShippableHelper_Image
 
             $imageInfo['typeInt'] = $info[2];
             switch ($imageInfo['typeInt']) {
-                case IMAGETYPE_GIF:
-                    $imageInfo['type'] = 'gif';
-                    break;
                 case IMAGETYPE_JPEG:
                     $imageInfo['type'] = 'jpeg';
                     break;
                 case IMAGETYPE_PNG:
                     $imageInfo['type'] = 'png';
                     break;
+                default:
+                    $imageInfo['typeInt'] = 0;
             }
         }
 
@@ -54,6 +53,7 @@ class bdCloudServerHelper_ShippableHelper_Image
         $tempPath = self::_getTempPath($fullPath);
         $imageInfo = self::getImageInfo($tempPath);
 
+        $image = null;
         if (!empty($imageInfo['typeInt'])) {
             $image = XenForo_Image_Abstract::createFromFile($tempPath, $imageInfo['typeInt']);
         }

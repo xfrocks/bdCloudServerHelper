@@ -53,7 +53,7 @@ if ($hash !== bdCloudServerHelper_Helper_Crypt::oneWayHash(array($url, $width)))
     exit;
 }
 
-$thumbnailUrl = bdCloudServerHelper_ShippableHelper_Image::getThumbnailUrl($url, $width, 0, 'cloud/image');
+$thumbnailUrl = bdCloudServerHelper_ShippableHelper_Image::getThumbnailUrl($url, $width, '', 'cloud/image');
 if (empty($thumbnailUrl)) {
     header('HTTP/1.0 500 Internal Server Error');
     exit;
