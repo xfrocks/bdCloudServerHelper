@@ -321,6 +321,7 @@ jQuery(function()
     <listener event_id="front_controller_pre_view" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="front_controller_pre_view" active="1" hint="" description=""/>
     <listener event_id="init_dependencies" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="init_dependencies" active="1" hint="" description=""/>
     <listener event_id="load_class" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_CssOutput" active="1" hint="XenForo_CssOutput" description="XenForo_CssOutput"/>
+    <listener event_id="load_class_bb_code" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_BbCode_Formatter_Base" active="1" hint="XenForo_BbCode_Formatter_Base" description="XenForo_BbCode_Formatter_Base"/>
     <listener event_id="load_class_controller" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_ControllerPublic_Online" active="1" hint="XenForo_ControllerPublic_Online" description="XenForo_ControllerPublic_Online"/>
     <listener event_id="load_class_model" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_Model_Attachment" active="1" hint="XenForo_Model_Attachment" description="XenForo_Model_Attachment"/>
     <listener event_id="load_class_model" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_Model_Thread" active="1" hint="XenForo_Model_Thread" description="XenForo_Model_Thread"/>
@@ -337,6 +338,12 @@ jQuery(function()
   <email_template_modifications/>
   <optiongroups>
     <group group_id="bdCloudServerHelper" display_order="9999" debug_only="0"/>
+    <option option_id="bdcsh_imageProxyWidth" edit_format="spinbox" data_type="unsigned_integer" can_backup="1">
+      <default_value>800</default_value>
+      <edit_format_params>step=100</edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="bdCloudServerHelper" display_order="200"/>
+    </option>
     <option option_id="bdcsh_redis" edit_format="checkbox" data_type="array" can_backup="1">
       <default_value></default_value>
       <edit_format_params>attachment_view = {xen:phrase bdcsh_redis_attachment_view}
@@ -383,6 +390,8 @@ image_proxy_view = {xen:phrase bdcsh_redis_image_proxy_view}</edit_format_params
     <phrase title="bdcsh_redis_thread_view" version_id="1" version_string="0.9-dev"><![CDATA[Thread View Logging]]></phrase>
     <phrase title="cron_entry_bdcsh_statsAggregate" version_id="4" version_string="1.1.0"><![CDATA[[bd] Cloud Server Helper: Aggregate Stats Hourly]]></phrase>
     <phrase title="cron_entry_bdcsh_viewsUpdate" version_id="11" version_string="1.3.2"><![CDATA[[bd] Cloud Server Helper: Update View Counters]]></phrase>
+    <phrase title="option_bdcsh_imageProxyWidth" version_id="1040200" version_string="1.4.2"><![CDATA[Image Proxy Width]]></phrase>
+    <phrase title="option_bdcsh_imageProxyWidth_explain" version_id="1040200" version_string="1.4.2"><![CDATA[Enter the image width for proxied image, this will replace the default proxy link. Enter 0 to disable this feature.]]></phrase>
     <phrase title="option_bdcsh_redis" version_id="1" version_string="0.9-dev"><![CDATA[Use Redis]]></phrase>
     <phrase title="option_bdcsh_redisStats" version_id="4" version_string="1.1.0"><![CDATA[Save statistic data on Redis]]></phrase>
     <phrase title="option_bdcsh_redisStats_explain" version_id="4" version_string="1.1.0"><![CDATA[]]></phrase>

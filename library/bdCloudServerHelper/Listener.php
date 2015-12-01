@@ -70,6 +70,13 @@ class bdCloudServerHelper_Listener
         }
     }
 
+    public static function load_class_XenForo_BbCode_Formatter_Base($class, array &$extend)
+    {
+        if ($class === 'XenForo_BbCode_Formatter_Base') {
+            $extend[] = 'bdCloudServerHelper_XenForo_BbCode_Formatter_Base';
+        }
+    }
+
     public static function front_controller_pre_view(
         /** @noinspection PhpUnusedParameterInspection */
         XenForo_FrontController $fc,
