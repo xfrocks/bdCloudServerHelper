@@ -77,6 +77,13 @@ class bdCloudServerHelper_Listener
         }
     }
 
+    public static function load_class_XenForo_Model_Search($class, array &$extend)
+    {
+        if ($class === 'XenForo_Model_Search') {
+            $extend[] = 'bdCloudServerHelper_XenForo_Model_Search';
+        }
+    }
+
     public static function front_controller_pre_view(
         /** @noinspection PhpUnusedParameterInspection */
         XenForo_FrontController $fc,

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<addon addon_id="bdCloudServerHelper" title="[bd] Cloud Server Helper" version_string="1.5.0" version_id="1050003" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
+<addon addon_id="bdCloudServerHelper" title="[bd] Cloud Server Helper" version_string="1.5.1" version_id="1050100" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
   <admin_navigation/>
   <admin_permissions/>
   <admin_style_properties/>
@@ -327,6 +327,7 @@ jQuery(function()
     <listener event_id="load_class_model" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_Model_User" active="1" hint="XenForo_Model_User" description="XenForo_Model_User"/>
     <listener event_id="load_class_model" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_Model_ImageProxy" active="1" hint="XenForo_Model_ImageProxy" description="XenForo_Model_ImageProxy"/>
     <listener event_id="load_class_model" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_Model_Session" active="1" hint="XenForo_Model_Session" description="XenForo_Model_Session"/>
+    <listener event_id="load_class_model" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_Model_Search" active="1" hint="XenForo_Model_Search" description="XenForo_Model_Search"/>
     <listener event_id="load_class_view" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_ViewAdmin_Log_ServerErrorView" active="1" hint="XenForo_ViewAdmin_Log_ServerErrorView" description="XenForo_ViewAdmin_Log_ServerErrorView"/>
     <listener event_id="template_file_change" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="template_file_change" active="1" hint="" description=""/>
   </code_event_listeners>
@@ -338,6 +339,12 @@ jQuery(function()
   <email_template_modifications/>
   <optiongroups>
     <group group_id="bdCloudServerHelper" display_order="9999" debug_only="0"/>
+    <option option_id="bdcsh_cache" edit_format="checkbox" data_type="array" can_backup="1">
+      <default_value></default_value>
+      <edit_format_params>search = {xen:phrase bdcsh_cache_search}</edit_format_params>
+      <sub_options>*</sub_options>
+      <relation group_id="bdCloudServerHelper" display_order="50"/>
+    </option>
     <option option_id="bdcsh_imageProxyWidth" edit_format="spinbox" data_type="unsigned_integer" can_backup="1">
       <default_value>800</default_value>
       <edit_format_params>step=100</edit_format_params>
@@ -366,6 +373,7 @@ thread_view = {xen:phrase bdcsh_redis_thread_view}</edit_format_params>
     <interface_groups/>
   </permissions>
   <phrases>
+    <phrase title="bdcsh_cache_search" version_id="1050003" version_string="1.5.0"><![CDATA[Search Results]]></phrase>
     <phrase title="bdcsh_cloud_current_stats_since_x" version_id="4" version_string="1.1.0"><![CDATA[Live stats since {time}]]></phrase>
     <phrase title="bdcsh_cloud_stats" version_id="4" version_string="1.1.0"><![CDATA[Statistics]]></phrase>
     <phrase title="bdcsh_cloud_stats_4xx" version_id="5" version_string="1.2.0"><![CDATA[Access Denied]]></phrase>
@@ -386,6 +394,8 @@ thread_view = {xen:phrase bdcsh_redis_thread_view}</edit_format_params>
     <phrase title="bdcsh_redis_thread_view" version_id="1" version_string="0.9-dev"><![CDATA[Thread View Logging]]></phrase>
     <phrase title="cron_entry_bdcsh_statsAggregate" version_id="4" version_string="1.1.0"><![CDATA[[bd] Cloud Server Helper: Aggregate Stats Hourly]]></phrase>
     <phrase title="cron_entry_bdcsh_viewsUpdate" version_id="11" version_string="1.3.2"><![CDATA[[bd] Cloud Server Helper: Update View Counters]]></phrase>
+    <phrase title="option_bdcsh_cache" version_id="1050003" version_string="1.5.0"><![CDATA[Use Cache]]></phrase>
+    <phrase title="option_bdcsh_cache_explain" version_id="1050003" version_string="1.5.0"><![CDATA[Check the boxes for functionalities for which you want to use Cache to handle (instead of default implementation). Note: a cache backend must be configured in config.php for this to work.]]></phrase>
     <phrase title="option_bdcsh_imageProxyWidth" version_id="1040200" version_string="1.4.2"><![CDATA[Image Proxy Width]]></phrase>
     <phrase title="option_bdcsh_imageProxyWidth_explain" version_id="1040200" version_string="1.4.2"><![CDATA[Enter the image width for proxied image, this will replace the default proxy link. Enter 0 to disable this feature.]]></phrase>
     <phrase title="option_bdcsh_redis" version_id="1" version_string="0.9-dev"><![CDATA[Use Redis]]></phrase>
