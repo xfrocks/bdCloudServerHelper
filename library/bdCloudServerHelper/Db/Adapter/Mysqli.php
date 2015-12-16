@@ -15,7 +15,7 @@ class bdCloudServerHelper_Db_Adapter_Mysqli extends Zend_Db_Adapter_Mysqli
                 try {
                     return parent::query($sql, $bind);
                 } catch (Zend_Db_Statement_Mysqli_Exception $anotherOne) {
-                    throw new Exception($anotherOne->getMessage(), 0, $e);
+                    throw new Exception('[RETRIED] ' . $anotherOne->getMessage(), 0, $e);
                 }
             }
 
