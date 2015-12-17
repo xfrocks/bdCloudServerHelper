@@ -3,6 +3,9 @@
 class bdCloudServerHelper_Listener
 {
     protected static $_templateFileChanged = 0;
+    protected static $_classes = array(
+        'XenForo_CssOutput' => true,
+    );
 
     public static function init_dependencies()
     {
@@ -19,40 +22,32 @@ class bdCloudServerHelper_Listener
 
         // inject hostname into $_POST to make it available in server error log
         $_POST['.hostname'] = gethostname();
-    }
 
-    public static function load_class_XenForo_CssOutput($class, array &$extend)
-    {
-        if ($class === 'XenForo_CssOutput') {
-            $extend[] = 'bdCloudServerHelper_XenForo_CssOutput';
+        $optionRedis = bdCloudServerHelper_Option::get('redis');
+        if (!empty($optionRedis['attachment_view'])) {
+            self::$_classes['XenForo_Model_Attachment'] = true;
+        }
+        if (!empty($optionRedis['image_proxy_view'])) {
+            self::$_classes['XenForo_Model_ImageProxy'] = true;
+        }
+        if (!empty($optionRedis['thread_view'])) {
+            self::$_classes['XenForo_Model_Thread'] = true;
+        }
+        if (!empty($optionRedis['session_activity'])) {
+            self::$_classes['XenForo_Model_Session'] = true;
+            self::$_classes['XenForo_Model_User'] = true;
+        }
+
+        $optionCache = bdCloudServerHelper_Option::get('cache');
+        if (!empty($optionCache['search'])) {
+            self::$_classes['XenForo_Model_Search'] = true;
         }
     }
 
-    public static function load_class_XenForo_Model_Attachment($class, array &$extend)
+    public static function load_class($class, array &$extend)
     {
-        if ($class === 'XenForo_Model_Attachment') {
-            $extend[] = 'bdCloudServerHelper_XenForo_Model_Attachment';
-        }
-    }
-
-    public static function load_class_XenForo_Model_ImageProxy($class, array &$extend)
-    {
-        if ($class === 'XenForo_Model_ImageProxy') {
-            $extend[] = 'bdCloudServerHelper_XenForo_Model_ImageProxy';
-        }
-    }
-
-    public static function load_class_XenForo_Model_Session($class, array &$extend)
-    {
-        if ($class === 'XenForo_Model_Session') {
-            $extend[] = 'bdCloudServerHelper_XenForo_Model_Session';
-        }
-    }
-
-    public static function load_class_XenForo_Model_Thread($class, array &$extend)
-    {
-        if ($class === 'XenForo_Model_Thread') {
-            $extend[] = 'bdCloudServerHelper_XenForo_Model_Thread';
+        if (isset(self::$_classes[$class])) {
+            $extend[] = 'bdCloudServerHelper_' . $class;
         }
     }
 
@@ -67,20 +62,6 @@ class bdCloudServerHelper_Listener
     {
         if ($class === 'XenForo_BbCode_Formatter_Base') {
             $extend[] = 'bdCloudServerHelper_XenForo_BbCode_Formatter_Base';
-        }
-    }
-
-    public static function load_class_XenForo_Model_User($class, array &$extend)
-    {
-        if ($class === 'XenForo_Model_User') {
-            $extend[] = 'bdCloudServerHelper_XenForo_Model_User';
-        }
-    }
-
-    public static function load_class_XenForo_Model_Search($class, array &$extend)
-    {
-        if ($class === 'XenForo_Model_Search') {
-            $extend[] = 'bdCloudServerHelper_XenForo_Model_Search';
         }
     }
 
