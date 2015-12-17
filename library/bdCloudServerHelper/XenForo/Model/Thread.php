@@ -17,7 +17,7 @@ class bdCloudServerHelper_XenForo_Model_Thread extends XFCP_bdCloudServerHelper_
     public function updateThreadViews()
     {
         if (bdCloudServerHelper_Option::get('redis', 'thread_view')) {
-            $values = bdCloudServerHelper_Helper_Redis::getCounters('thread_view');
+            $values = bdCloudServerHelper_Helper_Redis::getValues('thread_view');
 
             $db = $this->_getDb();
 

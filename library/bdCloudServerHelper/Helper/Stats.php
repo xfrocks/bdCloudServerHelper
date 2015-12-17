@@ -58,10 +58,10 @@ class bdCloudServerHelper_Helper_Stats
 
     public static function compileStatsForSegment($segment)
     {
-        $successCounters = bdCloudServerHelper_Helper_Redis::getCounters('stats_success');
-        $_4xxCounters = bdCloudServerHelper_Helper_Redis::getCounters('stats_4xx');
-        $errorCounters = bdCloudServerHelper_Helper_Redis::getCounters('stats_error');
-        $pageTimes = bdCloudServerHelper_Helper_Redis::getCounters('stats_pageTime');
+        $successCounters = bdCloudServerHelper_Helper_Redis::getValues('stats_success');
+        $_4xxCounters = bdCloudServerHelper_Helper_Redis::getValues('stats_4xx');
+        $errorCounters = bdCloudServerHelper_Helper_Redis::getValues('stats_error');
+        $pageTimes = bdCloudServerHelper_Helper_Redis::getValues('stats_pageTime');
 
         $stats = array(
             'success' => 0,
@@ -109,7 +109,7 @@ class bdCloudServerHelper_Helper_Stats
     protected static function _aggregate($type, $multiplier = 1)
     {
         $counterType = 'stats_' . $type;
-        $counts = bdCloudServerHelper_Helper_Redis::getCounters($counterType);
+        $counts = bdCloudServerHelper_Helper_Redis::getValues($counterType);
         $currentSegment = self::getSegment();
         $db = XenForo_Application::getDb();
 

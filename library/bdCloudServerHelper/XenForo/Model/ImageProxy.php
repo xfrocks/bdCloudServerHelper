@@ -18,11 +18,7 @@ class bdCloudServerHelper_XenForo_Model_ImageProxy extends XFCP_bdCloudServerHel
 
     public function bdCloudServerHelper_updateImageViews()
     {
-        if (!bdCloudServerHelper_Option::get('redis', 'image_proxy_view')) {
-            return;
-        }
-
-        $values = bdCloudServerHelper_Helper_Redis::getCounters('image_proxy_view');
+        $values = bdCloudServerHelper_Helper_Redis::getValues('image_proxy_view');
 
         $db = $this->_getDb();
 

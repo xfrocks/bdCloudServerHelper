@@ -17,7 +17,7 @@ class bdCloudServerHelper_XenForo_Model_Attachment extends XFCP_bdCloudServerHel
     public function updateAttachmentViews()
     {
         if (bdCloudServerHelper_Option::get('redis', 'attachment_view')) {
-            $values = bdCloudServerHelper_Helper_Redis::getCounters('attachment_view');
+            $values = bdCloudServerHelper_Helper_Redis::getValues('attachment_view');
 
             $db = $this->_getDb();
 

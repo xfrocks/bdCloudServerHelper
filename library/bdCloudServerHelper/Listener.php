@@ -30,6 +30,9 @@ class bdCloudServerHelper_Listener
         if (!empty($optionRedis['image_proxy_view'])) {
             self::$_classes['XenForo_Model_ImageProxy'] = true;
         }
+        if (!empty($optionRedis['ip_login'])) {
+            self::$_classes['XenForo_Model_Ip'] = true;
+        }
         if (!empty($optionRedis['thread_view'])) {
             self::$_classes['XenForo_Model_Thread'] = true;
         }
