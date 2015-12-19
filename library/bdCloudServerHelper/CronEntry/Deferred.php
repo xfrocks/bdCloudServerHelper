@@ -15,5 +15,9 @@ class bdCloudServerHelper_CronEntry_Deferred
             $ipModel = XenForo_Model::create('XenForo_Model_Ip');
             $ipModel->bdCloudServerHelper_logLoginIps();
         }
+
+        // include daily clean up tasks
+        // so it puts less stress on the db server
+        XenForo_CronEntry_CleanUp::runDailyCleanUp();
     }
 }
