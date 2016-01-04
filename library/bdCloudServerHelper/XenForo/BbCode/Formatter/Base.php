@@ -4,6 +4,12 @@ class bdCloudServerHelper_XenForo_BbCode_Formatter_Base extends XFCP_bdCloudServ
 {
     protected function _generateProxyLink($proxyType, $url)
     {
+        if (bdCloudServerHelper_Option::get('imageProxyIgnoreHttps') > 0
+            && strtolower(substr($url, 0, 8)) === 'https://'
+        ) {
+            return $url;
+        }
+
         $width = intval(bdCloudServerHelper_Option::get('imageProxyWidth'));
         if ($width > 0
             && $proxyType === 'image'

@@ -339,6 +339,12 @@ jQuery(function()
       <sub_options>*</sub_options>
       <relation group_id="bdCloudServerHelper" display_order="50"/>
     </option>
+    <option option_id="bdcsh_imageProxyIgnoreHttps" edit_format="onoff" data_type="unsigned_integer" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="bdCloudServerHelper" display_order="200"/>
+    </option>
     <option option_id="bdcsh_imageProxyWidth" edit_format="spinbox" data_type="unsigned_integer" can_backup="1">
       <default_value>800</default_value>
       <edit_format_params>step=100</edit_format_params>
@@ -392,6 +398,8 @@ thread_view = {xen:phrase bdcsh_redis_thread_view}</edit_format_params>
     <phrase title="cron_entry_bdcsh_statsAggregate" version_id="4" version_string="1.1.0"><![CDATA[[bd] Cloud Server Helper: Aggregate Stats Hourly]]></phrase>
     <phrase title="option_bdcsh_cache" version_id="1050003" version_string="1.5.0"><![CDATA[Use Cache]]></phrase>
     <phrase title="option_bdcsh_cache_explain" version_id="1050003" version_string="1.5.0"><![CDATA[Check the boxes for functionalities for which you want to use Cache to handle (instead of default implementation). Note: a cache backend must be configured in config.php for this to work.]]></phrase>
+    <phrase title="option_bdcsh_imageProxyIgnoreHttps" version_id="1050201" version_string="1.5.2"><![CDATA[Ignore HTTPS images]]></phrase>
+    <phrase title="option_bdcsh_imageProxyIgnoreHttps_explain" version_id="1050201" version_string="1.5.2"><![CDATA[Enable this option to disable proxy feature (both default and this add-on's) for images with secure urls.]]></phrase>
     <phrase title="option_bdcsh_imageProxyWidth" version_id="1040200" version_string="1.4.2"><![CDATA[Image Proxy Width]]></phrase>
     <phrase title="option_bdcsh_imageProxyWidth_explain" version_id="1040200" version_string="1.4.2"><![CDATA[Enter the image width for proxied image, this will replace the default proxy link. Enter 0 to disable this feature.]]></phrase>
     <phrase title="option_bdcsh_redis" version_id="1" version_string="0.9-dev"><![CDATA[Use Redis]]></phrase>
