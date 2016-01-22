@@ -6,6 +6,14 @@ class bdCloudServerHelper_Db_Adapter_Mysqli extends Zend_Db_Adapter_Mysqli
 {
     public function query($sql, $bind = array())
     {
+        if (bdCloudServerHelper_Listener::isReadOnly()
+            && preg_match('#(insert|update|replace)#i', $sql)
+        ) {
+            // basically do nothing
+            // TODO: find a better NOP statement
+            return parent::query('SET @a=1');
+        }
+
         try {
             return parent::query($sql, $bind);
         } catch (Zend_Db_Statement_Mysqli_Exception $e) {

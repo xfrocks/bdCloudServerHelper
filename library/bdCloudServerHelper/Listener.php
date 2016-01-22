@@ -7,7 +7,9 @@ class bdCloudServerHelper_Listener
         'XenForo_CssOutput' => true,
     );
 
-    public static function init_dependencies()
+    protected static $_isReadOnly = false;
+
+    public static function init_dependencies(XenForo_Dependencies_Abstract $dependencies)
     {
         if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
             $requestPaths = XenForo_Application::get('requestPaths');
@@ -45,6 +47,14 @@ class bdCloudServerHelper_Listener
         if (!empty($optionCache['search'])) {
             self::$_classes['XenForo_Model_Search'] = true;
         }
+
+        $config = XenForo_Application::getConfig();
+        if ($config->get('bdCloudServerHelper_readOnly')
+            && $dependencies instanceof XenForo_Dependencies_Public
+        ) {
+            self::$_isReadOnly = true;
+            self::$_classes['XenForo_Session'] = true;
+        }
     }
 
     public static function load_class($class, array &$extend)
@@ -73,8 +83,8 @@ class bdCloudServerHelper_Listener
         XenForo_FrontController $fc,
         XenForo_ControllerResponse_Abstract &$controllerResponse,
         XenForo_ViewRenderer_Abstract &$viewRenderer,
-        array &$containerParams)
-    {
+        array &$containerParams
+    ) {
         if (self::$_templateFileChanged > 0) {
             bdCloudServerHelper_Helper_Template::markTemplatesAsUpdated();
             return;
@@ -89,13 +99,23 @@ class bdCloudServerHelper_Listener
         if (XenForo_Application::debugMode()) {
             $fc->getResponse()->setHeader('X-XenForo-Hostname', gethostname());
         }
+
+        if (self::isReadOnly()) {
+            $dependencies = $fc->getDependencies();
+            if ($dependencies instanceof XenForo_Dependencies_Public) {
+                $noticeParam = 'bdCloudServerHelper_showBoardReadOnlyNotice';
+                $noticeKey = 'bdcloudserverhelper_notice_board_read_only';
+                $dependencies->notices[$noticeParam] = $noticeKey;
+                $containerParams[$noticeParam] = true;
+            }
+        }
     }
 
     public static function front_controller_post_view(
         XenForo_FrontController $fc,
         /** @noinspection PhpUnusedParameterInspection */
-        &$output)
-    {
+        &$output
+    ) {
         if (bdCloudServerHelper_Option::get('redisStats')
             && $fc->getDependencies() instanceof XenForo_Dependencies_Public
         ) {
@@ -106,8 +126,8 @@ class bdCloudServerHelper_Listener
     public static function template_file_change(
         /** @noinspection PhpUnusedParameterInspection */
         $file,
-        $action)
-    {
+        $action
+    ) {
         if ($action == 'delete') {
             // ignore delete events to avoid wasting server resources
             return;
@@ -119,8 +139,13 @@ class bdCloudServerHelper_Listener
     public static function file_health_check(
         /** @noinspection PhpUnusedParameterInspection */
         XenForo_ControllerAdmin_Abstract $controller,
-        array &$hashes)
-    {
+        array &$hashes
+    ) {
         $hashes += bdCloudServerHelper_FileSums::getHashes();
+    }
+
+    public static function isReadOnly()
+    {
+        return self::$_isReadOnly;
     }
 }

@@ -374,6 +374,8 @@ thread_view = {xen:phrase bdcsh_redis_thread_view}</edit_format_params>
     <interface_groups/>
   </permissions>
   <phrases>
+    <phrase title="bdcloudserverhelper_forum_is_currently_read_only" version_id="1050300" version_string="1.5.3"><![CDATA[The forum is currently read only.]]></phrase>
+    <phrase title="bdcloudserverhelper_notice_board_read_only" global_cache="1" version_id="1050300" version_string="1.5.3"><![CDATA[Board Read Only]]></phrase>
     <phrase title="bdcsh_cache_search" version_id="1050003" version_string="1.5.0"><![CDATA[Search Results]]></phrase>
     <phrase title="bdcsh_cloud_current_stats_since_x" version_id="4" version_string="1.1.0"><![CDATA[Live stats since {time}]]></phrase>
     <phrase title="bdcsh_cloud_stats" version_id="4" version_string="1.1.0"><![CDATA[Statistics]]></phrase>
@@ -415,7 +417,9 @@ thread_view = {xen:phrase bdcsh_redis_thread_view}</edit_format_params>
     </route_type>
   </route_prefixes>
   <style_properties/>
-  <templates/>
+  <templates>
+    <template title="bdcloudserverhelper_notice_board_read_only" version_id="1050300" version_string="1.5.3"><![CDATA[{xen:phrase bdcloudserverhelper_forum_is_currently_read_only}]]></template>
+  </templates>
   <public_template_modifications>
     <modification template="navigation" modification_key="bdcsh_navigation" description="Remove Current Visitors navbar link if needed." execution_order="10" enabled="1" action="str_replace">
       <find><![CDATA[<li><a href="{xen:link online}">{xen:phrase current_visitors}</a></li>]]></find>
