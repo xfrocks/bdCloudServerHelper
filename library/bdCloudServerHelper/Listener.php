@@ -54,6 +54,7 @@ class bdCloudServerHelper_Listener
         ) {
             self::$_isReadOnly = true;
             self::$_classes['XenForo_Session'] = true;
+            XenForo_Application::set('_bdCloudServerHelper_readonly', true);
         }
     }
 
