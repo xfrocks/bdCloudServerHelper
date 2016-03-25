@@ -21,8 +21,9 @@ class bdCloudServerHelper_Db_Adapter_Mysqli extends Zend_Db_Adapter_Mysqli
                 // https://www.percona.com/blog/2012/08/17/percona-xtradb-cluster-multi-node-writing-and-unexpected-deadlocks/
                 // the server told us to restart, just do it then
                 try {
+                    usleep(500);
                     return parent::query($sql, $bind);
-                } catch (Zend_Db_Statement_Mysqli_Exception $anotherOne) {
+                } catch (Exception $anotherOne) {
                     throw new Exception('[RETRIED] ' . $anotherOne->getMessage(), 0, $e);
                 }
             }
