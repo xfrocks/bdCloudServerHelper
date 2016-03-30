@@ -351,13 +351,9 @@ jQuery(function()
       <sub_options></sub_options>
       <relation group_id="bdCloudServerHelper" display_order="200"/>
     </option>
-    <option option_id="bdcsh_redis" edit_format="checkbox" data_type="array" can_backup="1">
+    <option option_id="bdcsh_redis" edit_format="callback" data_type="array" can_backup="1">
       <default_value></default_value>
-      <edit_format_params>attachment_view = {xen:phrase bdcsh_redis_attachment_view}
-image_proxy_view = {xen:phrase bdcsh_redis_image_proxy_view}
-ip_login = {xen:phrase bdcsh_redis_ip_login}
-session_activity = {xen:phrase bdcsh_redis_session_activity}
-thread_view = {xen:phrase bdcsh_redis_thread_view}</edit_format_params>
+      <edit_format_params>bdCloudServerHelper_Option::renderRedis</edit_format_params>
       <sub_options>*</sub_options>
       <relation group_id="bdCloudServerHelper" display_order="10"/>
     </option>
@@ -392,6 +388,7 @@ thread_view = {xen:phrase bdcsh_redis_thread_view}</edit_format_params>
     <phrase title="bdcsh_live_update_disabled" version_id="10" version_string="1.3.1"><![CDATA[Live Update is disabled]]></phrase>
     <phrase title="bdcsh_notice_board_read_only" global_cache="1" version_id="1050400" version_string="1.5.4"><![CDATA[Board Read Only]]></phrase>
     <phrase title="bdcsh_redis_attachment_view" version_id="1" version_string="0.9-dev"><![CDATA[Attachment View Logging]]></phrase>
+    <phrase title="bdcsh_redis_bdAd" version_id="1050400" version_string="1.5.4"><![CDATA[[bd] Advertisement: ad view/click logging]]></phrase>
     <phrase title="bdcsh_redis_image_proxy_view" version_id="11" version_string="1.3.2"><![CDATA[Image Proxy View Logging]]></phrase>
     <phrase title="bdcsh_redis_ip_login" version_id="1050102" version_string="1.5.1"><![CDATA[Logged-in IP Tracking]]></phrase>
     <phrase title="bdcsh_redis_session_activity" version_id="1040200" version_string="1.4.2"><![CDATA[Session Activity Tracking]]></phrase>
