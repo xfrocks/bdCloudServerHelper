@@ -105,7 +105,8 @@ class bdCloudServerHelper_Listener
             $dependencies = $fc->getDependencies();
             if ($dependencies instanceof XenForo_Dependencies_Public) {
                 $noticeParam = 'bdCloudServerHelper_showBoardReadOnlyNotice';
-                $noticeKey = 'bdcloudserverhelper_notice_board_read_only';
+                // new XenForo_Phrase('bdcsh_notice_board_read_only')
+                $noticeKey = 'bdcsh_notice_board_read_only';
                 $dependencies->notices[$noticeParam] = $noticeKey;
                 $containerParams[$noticeParam] = true;
             }
