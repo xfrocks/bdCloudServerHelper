@@ -38,12 +38,14 @@
                 success: parseInt($div.find('.success').data('value')),
                 '4xx': parseInt($div.find('.4xx').data('value')),
                 error: parseInt($div.find('.error').data('value')),
+                cache_hit: parseInt($div.find('.cache_hit').data('value')),
                 pageTime: parseInt($div.find('.pageTime').data('value'))
             };
             this.sum = {
                 success: 0,
                 '4xx': 0,
                 error: 0,
+                cache_hit: 0,
                 pageTime: 0
             };
 

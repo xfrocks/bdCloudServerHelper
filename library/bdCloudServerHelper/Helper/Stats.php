@@ -6,7 +6,7 @@ class bdCloudServerHelper_Helper_Stats
     const DAILY_STATS_TYPE_PREFIX = 'bdcsh_stats_';
     const DAILY_STATS_MULTIPLIER_PAGE_TIME = 100000;
 
-    public static function log(XenForo_FrontController $fc)
+    public static function log(XenForo_FrontController $fc, $responseType = null)
     {
         $success = 0;
 
@@ -14,19 +14,21 @@ class bdCloudServerHelper_Helper_Stats
             $segment = self::getSegment();
             $pageTime = microtime(true) - XenForo_Application::get('page_start_time');
 
-            $responseType = 'success';
-            $httpResponseCode = $fc->getResponse()->getHttpResponseCode();
-            if ($httpResponseCode != 200) {
-                if ($httpResponseCode >= 300
-                    && $httpResponseCode < 400
-                ) {
-                    // redirect? still success
-                } elseif ($httpResponseCode >= 400
-                    && $httpResponseCode < 500
-                ) {
-                    $responseType = '4xx';
-                } else {
-                    $responseType = 'error';
+            if ($responseType === null) {
+                $responseType = 'success';
+                $httpResponseCode = $fc->getResponse()->getHttpResponseCode();
+                if ($httpResponseCode != 200) {
+                    if ($httpResponseCode >= 300
+                        && $httpResponseCode < 400
+                    ) {
+                        // redirect? still success
+                    } elseif ($httpResponseCode >= 400
+                        && $httpResponseCode < 500
+                    ) {
+                        $responseType = '4xx';
+                    } else {
+                        $responseType = 'error';
+                    }
                 }
             }
 
@@ -53,6 +55,7 @@ class bdCloudServerHelper_Helper_Stats
         self::_aggregate('success');
         self::_aggregate('4xx');
         self::_aggregate('error');
+        self::_aggregate('cache_hit');
         self::_aggregate('pageTime', self::DAILY_STATS_MULTIPLIER_PAGE_TIME);
     }
 
@@ -61,12 +64,14 @@ class bdCloudServerHelper_Helper_Stats
         $successCounters = bdCloudServerHelper_Helper_Redis::getValues('stats_success');
         $_4xxCounters = bdCloudServerHelper_Helper_Redis::getValues('stats_4xx');
         $errorCounters = bdCloudServerHelper_Helper_Redis::getValues('stats_error');
+        $cacheHitCounters = bdCloudServerHelper_Helper_Redis::getValues('stats_cache_hit');
         $pageTimes = bdCloudServerHelper_Helper_Redis::getValues('stats_pageTime');
 
         $stats = array(
             'success' => 0,
             '4xx' => 0,
             'error' => 0,
+            'cache_hit' => 0,
             'total' => 0,
             'pageTime' => 0,
             'pageTime_avg' => 0,
@@ -83,6 +88,10 @@ class bdCloudServerHelper_Helper_Stats
         if (isset($errorCounters[$segment])) {
             $stats['error'] = intval($errorCounters[$segment]);
             $stats['total'] += $stats['error'];
+        }
+        if (isset($cacheHitCounters[$segment])) {
+            $stats['cache_hit'] = intval($cacheHitCounters[$segment]);
+            $stats['total'] += $stats['cache_hit'];
         }
         if (isset($pageTimes[$segment])) {
             $stats['pageTime'] = floatval($pageTimes[$segment]);

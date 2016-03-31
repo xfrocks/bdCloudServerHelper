@@ -46,6 +46,10 @@ class bdCloudServerHelper_Listener
             self::$_classes['bdAd_Model_Log'] = true;
         }
 
+        if (bdCloudServerHelper_Option::get('redisStats')) {
+            self::$_classes['bdCache_Core'] = true;
+        }
+
         $optionCache = bdCloudServerHelper_Option::get('cache');
         if (!empty($optionCache['search'])) {
             self::$_classes['XenForo_Model_Search'] = true;

@@ -66,6 +66,15 @@
 			</xen:include>
 		</dd>
 	</dl>
+	<dl class="pairsJustified cache_hit" data-value="{$currentStats.cache_hit}">
+		<dt>{xen:phrase bdcsh_cloud_stats_cache_hit}:</dt>
+		<dd>
+			<xen:include template="bdcsh_cloud_stats_percent_x_of_y">
+				<xen:set var="$x">{$currentStats.cache_hit}</xen:set>
+				<xen:set var="$y">{$currentStats.total}</xen:set>
+			</xen:include>
+		</dd>
+	</dl>
 
 	<dl class="pairsJustified pageTime" data-value="{$currentStats.pageTime}">
 		<dt>{xen:phrase bdcsh_cloud_stats_page_time_avg}:</dt>
@@ -374,6 +383,7 @@ jQuery(function()
     <phrase title="bdcsh_cloud_current_stats_since_x" version_id="4" version_string="1.1.0"><![CDATA[Live stats since {time}]]></phrase>
     <phrase title="bdcsh_cloud_stats" version_id="4" version_string="1.1.0"><![CDATA[Statistics]]></phrase>
     <phrase title="bdcsh_cloud_stats_4xx" version_id="5" version_string="1.2.0"><![CDATA[Access Denied]]></phrase>
+    <phrase title="bdcsh_cloud_stats_cache_hit" version_id="1050400" version_string="1.5.4"><![CDATA[Cache Hit]]></phrase>
     <phrase title="bdcsh_cloud_stats_error" version_id="4" version_string="1.1.0"><![CDATA[Error]]></phrase>
     <phrase title="bdcsh_cloud_stats_graph_from_x_to_y" version_id="4" version_string="1.1.0"><![CDATA[Graph from {from} to {to}]]></phrase>
     <phrase title="bdcsh_cloud_stats_grouping" version_id="6" version_string="1.2.1"><![CDATA[Grouping]]></phrase>
