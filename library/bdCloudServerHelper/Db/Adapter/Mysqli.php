@@ -32,7 +32,7 @@ class bdCloudServerHelper_Db_Adapter_Mysqli extends Zend_Db_Adapter_Mysqli
             $this->_config['host'] = $masterHost;
         }
 
-        if ($hostsArray !== null
+        if (!empty($hostsArray)
             && XenForo_Application::isRegistered('session')
             && XenForo_Application::getSession()->get('user_id') == 0
         ) {
