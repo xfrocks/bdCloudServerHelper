@@ -4,18 +4,27 @@ class bdCloudServerHelper_XenForo_BbCode_Formatter_Base extends XFCP_bdCloudServ
 {
     protected function _generateProxyLink($proxyType, $url)
     {
+        $firstEight = strtolower(substr($url, 0, 8));
+
         if (bdCloudServerHelper_Option::get('imageProxyIgnoreHttps') > 0
-            && strtolower(substr($url, 0, 8)) === 'https://'
+            && $firstEight === 'https://'
         ) {
+            return $url;
+        }
+
+        if (substr($firstEight, 0, 5) === 'data:') {
             return $url;
         }
 
         $width = intval(bdCloudServerHelper_Option::get('imageProxyWidth'));
         if ($width > 0
             && $proxyType === 'image'
+            // http://stackoverflow.com/questions/417142/what-is-the-maximum-length-of-a-url-in-different-browsers
+            && strlen($url) < 2000
             && Zend_Uri::check($url)
         ) {
-            $thumbnailPath = bdCloudServerHelper_ShippableHelper_Image::getThumbnailPath($url, $width, '', 'cloud/image');
+            $thumbnailPath = bdCloudServerHelper_ShippableHelper_Image::getThumbnailPath($url, $width, '',
+                'cloud/image');
             if (file_exists($thumbnailPath) && filesize($thumbnailPath) > 0) {
                 return XenForo_Link::convertUriToAbsoluteUri(
                     bdCloudServerHelper_ShippableHelper_Image::getThumbnailUrl($url, $width, '', 'cloud/image'), true);
