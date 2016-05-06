@@ -37,6 +37,7 @@ class bdCloudServerHelper_XenForo_Model_Ip extends XFCP_bdCloudServerHelper_XenF
             $value = @unserialize($value);
             if (isset($value['ip'])
                 && isset($value['log_date'])
+                && $userId > 0
             ) {
                 $db->insert('xf_ip', array(
                     'user_id' => $userId,
