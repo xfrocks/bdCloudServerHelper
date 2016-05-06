@@ -23,6 +23,10 @@ class bdCloudServerHelper_XenForo_BbCode_Formatter_Base extends XFCP_bdCloudServ
             && strlen($url) < 2000
             && Zend_Uri::check($url)
         ) {
+            if (defined('BDIMAGE_IS_WORKING')) {
+                return bdImage_Integration::buildThumbnailLink($url, $width, bdImage_Integration::MODE_STRETCH_HEIGHT);
+            }
+
             $thumbnailPath = bdCloudServerHelper_ShippableHelper_Image::getThumbnailPath($url, $width, '',
                 'cloud/image');
             if (file_exists($thumbnailPath) && filesize($thumbnailPath) > 0) {

@@ -1,46 +1,14 @@
 <?php
 
-// updated by DevHelper_Helper_ShippableHelper at 2015-12-01T17:41:33+00:00
+// updated by DevHelper_Helper_ShippableHelper at 2016-05-06T03:19:50+00:00
 
 /**
  * Class bdCloudServerHelper_ShippableHelper_Image
- * @version 5
+ * @version 6
  * @see DevHelper_Helper_ShippableHelper_Image
  */
 class bdCloudServerHelper_ShippableHelper_Image
 {
-    public static function getImageInfo($path)
-    {
-        $tempPath = self::_getTempPath($path);
-        $imageInfo = array('path' => $path);
-
-        $fileSize = @filesize($tempPath);
-        if (!empty($fileSize)) {
-            $imageInfo['fileSize'] = $fileSize;
-        }
-
-        if (!empty($imageInfo['fileSize'])
-            && $info = getimagesize($tempPath)
-        ) {
-            $imageInfo['width'] = $info[0];
-            $imageInfo['height'] = $info[1];
-
-            $imageInfo['typeInt'] = $info[2];
-            switch ($imageInfo['typeInt']) {
-                case IMAGETYPE_JPEG:
-                    $imageInfo['type'] = 'jpeg';
-                    break;
-                case IMAGETYPE_PNG:
-                    $imageInfo['type'] = 'png';
-                    break;
-                default:
-                    $imageInfo['typeInt'] = 0;
-            }
-        }
-
-        return $imageInfo;
-    }
-
     public static function getThumbnailUrl($fullPath, $width, $height = 0, $dir = null)
     {
         $thumbnailPath = self::getThumbnailPath($fullPath, $width, $height, $dir);
@@ -51,7 +19,7 @@ class bdCloudServerHelper_ShippableHelper_Image
         }
 
         $tempPath = self::_getTempPath($fullPath);
-        $imageInfo = self::getImageInfo($tempPath);
+        $imageInfo = self::_getImageInfo($tempPath);
 
         $image = null;
         if (!empty($imageInfo['typeInt'])) {
@@ -155,5 +123,36 @@ class bdCloudServerHelper_ShippableHelper_Image
         }
 
         return sprintf('/%s/%sx%s/%s/%s.%s', $dir, $width, $height, $divider, $fileName, $ext);
+    }
+
+    protected static function _getImageInfo($path)
+    {
+        $imageInfo = array();
+
+        $fileSize = @filesize($path);
+        if (!empty($fileSize)) {
+            $imageInfo['fileSize'] = $fileSize;
+        }
+
+        if (!empty($imageInfo['fileSize'])
+            && $info = @getimagesize($path)
+        ) {
+            $imageInfo['width'] = $info[0];
+            $imageInfo['height'] = $info[1];
+
+            $imageInfo['typeInt'] = $info[2];
+            switch ($imageInfo['typeInt']) {
+                case IMAGETYPE_JPEG:
+                    $imageInfo['type'] = 'jpeg';
+                    break;
+                case IMAGETYPE_PNG:
+                    $imageInfo['type'] = 'png';
+                    break;
+                default:
+                    $imageInfo['typeInt'] = 0;
+            }
+        }
+
+        return $imageInfo;
     }
 }
