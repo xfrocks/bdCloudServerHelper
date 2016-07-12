@@ -9,7 +9,7 @@ class bdCloudServerHelper_Helper_Redis
      */
     public static function getConnection()
     {
-        $redis = null;
+        static $redis = null;
 
         if ($redis === null) {
             $redis = false;
@@ -39,8 +39,8 @@ class bdCloudServerHelper_Helper_Redis
             }
 
             $_redis = new Redis();
-            if (!$_redis->pconnect($host, $port, $timeout)) {
-                XenForo_Error::logError($_redis->getLastError());
+            if (!$_redis->connect($host, $port, $timeout)) {
+                XenForo_Error::logError(sprintf('Cannot connect to Redis %s:%d %f', $host, $port, $timeout));
                 return $redis;
             }
 
@@ -48,7 +48,7 @@ class bdCloudServerHelper_Helper_Redis
             if (!empty($password)
                 && !$_redis->auth($password)
             ) {
-                XenForo_Error::logError($_redis->getLastError());
+                XenForo_Error::logError(sprintf('Cannot authenticate with Redis (password=%s)', $password));
                 return $redis;
             }
 
