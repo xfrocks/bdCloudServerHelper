@@ -21,14 +21,14 @@ class bdCloudServerHelper_XenForo_BbCode_Formatter_Base extends XFCP_bdCloudServ
             && $proxyType === 'image'
             // http://stackoverflow.com/questions/417142/what-is-the-maximum-length-of-a-url-in-different-browsers
             && strlen($url) < 2000
-            && Zend_Uri::check($url)
+            && !!parse_url($url, PHP_URL_HOST)
         ) {
             if (defined('BDIMAGE_IS_WORKING')) {
                 return bdImage_Integration::buildThumbnailLink($url, $width, bdImage_Integration::MODE_STRETCH_HEIGHT);
             }
 
-            $thumbnailPath = bdCloudServerHelper_ShippableHelper_Image::getThumbnailPath($url, $width, '',
-                'cloud/image');
+            $thumbnailPath = bdCloudServerHelper_ShippableHelper_Image::getThumbnailPath($url,
+                $width, '', 'cloud/image');
             if (file_exists($thumbnailPath) && filesize($thumbnailPath) > 0) {
                 return XenForo_Link::convertUriToAbsoluteUri(
                     bdCloudServerHelper_ShippableHelper_Image::getThumbnailUrl($url, $width, '', 'cloud/image'), true);
