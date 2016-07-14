@@ -57,17 +57,24 @@ class bdCloudServerHelper_Db_Adapter_Mysqli extends Zend_Db_Adapter_Mysqli
 
     public function query($sql, $bind = array())
     {
+        // TODO: find a better NOP statement
+        static $sqlNoOp = 'SET @a=1';
+        static $safeTablesRegEx = '#(xf_thread_read|xf_user_alert)#';
+
         if (bdCloudServerHelper_Listener::isReadOnly()
             && preg_match('#(insert|update|replace)#i', $sql)
         ) {
-            // basically do nothing
-            // TODO: find a better NOP statement
-            return parent::query('SET @a=1');
+            return parent::query($sqlNoOp);
         }
 
         try {
             return parent::query($sql, $bind);
         } catch (Zend_Db_Statement_Mysqli_Exception $e) {
+            if (preg_match($safeTablesRegEx, $sql)) {
+                XenForo_Error::logException($e, false, '[CANCELLED] ');
+                return parent::query($sqlNoOp);
+            }
+
             if (strpos($e->getMessage(), 'try restarting transaction') !== false) {
                 // https://www.percona.com/blog/2012/08/17/percona-xtradb-cluster-multi-node-writing-and-unexpected-deadlocks/
                 // the server told us to restart, just do it then
