@@ -60,6 +60,23 @@ class bdCloudServerHelper_Db_Adapter_Mysqli extends Zend_Db_Adapter_Mysqli
         // TODO: find a better NOP statement
         static $sqlNoOp = 'SET @a=1';
         static $safeTablesRegEx = '#(xf_thread_read|xf_user_alert)#';
+        static $dumpExceptionToFile = 'db';
+        static $exceptions = array();
+        static $exceptionClassNameMaxLength = 0;
+
+        if ($dumpExceptionToFile !== ''
+            && count($exceptions) > 0
+            && strpos($sql, 'xf_error_log') !== false
+        ) {
+            foreach (array_keys($bind) as $bindKey) {
+                if (is_string($bind[$bindKey])
+                    && strlen($bind[$bindKey]) <= $exceptionClassNameMaxLength
+                    && isset($exceptions[$bind[$bindKey]])
+                ) {
+                    return parent::query($sqlNoOp);
+                }
+            }
+        }
 
         if (bdCloudServerHelper_Listener::isReadOnly()
             && preg_match('#(insert|update|replace)#i', $sql)
@@ -69,9 +86,8 @@ class bdCloudServerHelper_Db_Adapter_Mysqli extends Zend_Db_Adapter_Mysqli
 
         try {
             return parent::query($sql, $bind);
-        } catch (Zend_Db_Statement_Mysqli_Exception $e) {
+        } catch (Zend_Db_Exception $e) {
             if (preg_match($safeTablesRegEx, $sql)) {
-                XenForo_Error::logException($e, false, '[CANCELLED] ');
                 return parent::query($sqlNoOp);
             }
 
@@ -81,9 +97,19 @@ class bdCloudServerHelper_Db_Adapter_Mysqli extends Zend_Db_Adapter_Mysqli
                 try {
                     usleep(500);
                     return parent::query($sql, $bind);
-                } catch (Exception $anotherOne) {
-                    throw new Exception('[RETRIED] ' . $anotherOne->getMessage(), 0, $e);
+                } catch (Zend_Db_Exception $anotherOne) {
+                    $e = new Zend_Db_Exception('[RETRIED] ' . $anotherOne->getMessage(),
+                        $anotherOne->getCode(), $e);
                 }
+            }
+
+            if ($dumpExceptionToFile !== '') {
+                $exceptionClassName = get_class($e);
+                $exceptions[$exceptionClassName] = true;
+                $exceptionClassNameMaxLength = max($exceptionClassNameMaxLength, strlen($exceptionClassName));
+                XenForo_Helper_File::log($dumpExceptionToFile, sprintf("%s\n\t%s (%s:%d)\n%s",
+                    trim(preg_replace('#\s+#', ' ', $sql)), $e->getMessage(),
+                    $e->getFile(), $e->getLine(), $e->getTraceAsString()));
             }
 
             throw $e;
