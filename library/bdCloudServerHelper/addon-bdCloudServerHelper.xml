@@ -314,6 +314,60 @@ jQuery(function()
 </xen:if>
 
 <xen:edithint template="log_server_error_view" />]]></template>
+    <template title="bdcsh_phrase_sync"><![CDATA[<xen:title>{xen:phrase bdcsh_sync_phrases}</xen:title>
+
+<xen:form action="{xen:adminlink phrases/sync}">
+
+	<xen:textboxunit name="api_address" label="{xen:phrase bdcsh_api_address}:"
+					 placeholder="https://xfrocks.com/api" value="{$input.api_address}" />
+
+	<xen:selectunit label="{xen:phrase language}:" name="language_id" value="{$input.language_id}">
+		<xen:options source="$languages" />
+	</xen:selectunit>
+
+	<xen:selectunit label="{xen:phrase add_on}:" name="addon_id" value="{$input.addon_id}" hint="{xen:phrase optional}">
+		<xen:option />
+		<xen:options source="$addOns" />
+	</xen:selectunit>
+
+	<xen:submitunit save="{xen:phrase continue}" />
+	
+	<input type="hidden" name="_xfConfirm" value="1" />
+</xen:form>
+
+<xen:edithint template="bdcsh_phrase_sync_results" />]]></template>
+    <template title="bdcsh_phrase_sync_results"><![CDATA[<xen:title>{xen:phrase bdcsh_sync_phrases}</xen:title>
+<xen:description>{xen:phrase bdcsh_sync_found_x_matched_y_new_z,
+	'found={xen:count $apiPhrases}',
+	'matched={xen:number $matchedTextCount}',
+	'new={xen:count $newPhrases}'}</xen:description>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink phrases/sync}">{xen:phrase reset}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:form action="{xen:adminlink phrases/sync-save}">
+
+	<xen:foreach loop="$newPhrases" value="$phrase">
+		<xen:radiounit label="" name="texts[{$phrase.phrase_map_id}]">
+			<xen:option value="" selected="1"><span class="muted">{$phrase.phrase_text}</span></xen:option>
+			<xen:option value="{$phrase.new_phrase_text}">{$phrase.new_phrase_text}</xen:option>
+			<xen:explain>{$phrase.title}</xen:explain>
+			
+			<xen:html>
+				<xen:if is="{$phrase.phrase_id} > 0">
+					<input type="hidden" name="phrase_ids[{$phrase.phrase_map_id}]" value="{$phrase.phrase_id}" />
+				</xen:if>
+			</xen:html>
+		</xen:radiounit>
+	</xen:foreach>
+
+	<xen:submitunit save="{xen:phrase save}" />
+
+	<input type="hidden" name="api_address" value="{$apiAddress}" />
+	<input type="hidden" name="language_id" value="{$language.language_id}" />
+	<input type="hidden" name="addon_id" value="{$addOn.addon_id}" />
+</xen:form>]]></template>
   </admin_templates>
   <admin_template_modifications>
     <modification template="log_server_error_view" modification_key="bdcsh_log_server_error_view" description="Insert hostname for server error log view." execution_order="10" enabled="1" action="str_replace">
@@ -331,6 +385,8 @@ jQuery(function()
     <listener event_id="init_dependencies" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="init_dependencies" active="1" hint="" description=""/>
     <listener event_id="load_class" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class" active="1" hint="" description=""/>
     <listener event_id="load_class_bb_code" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_BbCode_Formatter_Base" active="1" hint="XenForo_BbCode_Formatter_Base" description="XenForo_BbCode_Formatter_Base"/>
+    <listener event_id="load_class_controller" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_ControllerAdmin_Phrase" active="1" hint="XenForo_ControllerAdmin_Phrase" description="XenForo_ControllerAdmin_Phrase"/>
+    <listener event_id="load_class_model" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_Model_Phrase" active="1" hint="XenForo_Model_Phrase" description="XenForo_Model_Phrase"/>
     <listener event_id="load_class_view" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_ViewAdmin_Log_ServerErrorView" active="1" hint="XenForo_ViewAdmin_Log_ServerErrorView" description="XenForo_ViewAdmin_Log_ServerErrorView"/>
     <listener event_id="template_file_change" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="template_file_change" active="1" hint="" description=""/>
   </code_event_listeners>
@@ -379,6 +435,7 @@ jQuery(function()
     <interface_groups/>
   </permissions>
   <phrases>
+    <phrase title="bdcsh_api_address" version_id="1050700" version_string="1.5.7"><![CDATA[API Address]]></phrase>
     <phrase title="bdcsh_cache_search" version_id="1050003" version_string="1.5.0"><![CDATA[Search Results]]></phrase>
     <phrase title="bdcsh_cloud_current_stats_since_x" version_id="4" version_string="1.1.0"><![CDATA[Live stats since {time}]]></phrase>
     <phrase title="bdcsh_cloud_stats" version_id="4" version_string="1.1.0"><![CDATA[Statistics]]></phrase>
@@ -403,6 +460,9 @@ jQuery(function()
     <phrase title="bdcsh_redis_ip_login" version_id="1050102" version_string="1.5.1"><![CDATA[Logged-in IP Tracking]]></phrase>
     <phrase title="bdcsh_redis_session_activity" version_id="1040200" version_string="1.4.2"><![CDATA[Session Activity Tracking]]></phrase>
     <phrase title="bdcsh_redis_thread_view" version_id="1" version_string="0.9-dev"><![CDATA[Thread View Logging]]></phrase>
+    <phrase title="bdcsh_sync_found_x_matched_all" version_id="1050700" version_string="1.5.7"><![CDATA[Found {found} phrases and all of them matched, nothing to sync for now.]]></phrase>
+    <phrase title="bdcsh_sync_found_x_matched_y_new_z" version_id="1050700" version_string="1.5.7"><![CDATA[Found {found} phrases, {matched} of them matched and {new} different texts are listed below.]]></phrase>
+    <phrase title="bdcsh_sync_phrases" version_id="1050700" version_string="1.5.7"><![CDATA[Sync Phrases]]></phrase>
     <phrase title="cron_entry_bdcsh_deferred" version_id="1050102" version_string="1.5.1"><![CDATA[[bd] Cloud Server Helper: Run Deferred Tasks (twice hourly)]]></phrase>
     <phrase title="cron_entry_bdcsh_statsAggregate" version_id="4" version_string="1.1.0"><![CDATA[[bd] Cloud Server Helper: Aggregate Stats Hourly]]></phrase>
     <phrase title="option_bdcsh_cache" version_id="1050003" version_string="1.5.0"><![CDATA[Use Cache]]></phrase>

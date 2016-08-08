@@ -157,4 +157,18 @@ class bdCloudServerHelper_Listener
     {
         return self::$_isReadOnly;
     }
+
+    public static function load_class_XenForo_ControllerAdmin_Phrase($class, array &$extend)
+    {
+        if ($class === 'XenForo_ControllerAdmin_Phrase') {
+            $extend[] = 'bdCloudServerHelper_XenForo_ControllerAdmin_Phrase';
+        }
+    }
+
+    public static function load_class_XenForo_Model_Phrase($class, array &$extend)
+    {
+        if ($class === 'XenForo_Model_Phrase') {
+            $extend[] = 'bdCloudServerHelper_XenForo_Model_Phrase';
+        }
+    }
 }
