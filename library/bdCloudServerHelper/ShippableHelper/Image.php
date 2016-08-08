@@ -1,10 +1,10 @@
 <?php
 
-// updated by DevHelper_Helper_ShippableHelper at 2016-05-06T03:19:50+00:00
+// updated by DevHelper_Helper_ShippableHelper at 2016-07-12T13:33:35+00:00
 
 /**
  * Class bdCloudServerHelper_ShippableHelper_Image
- * @version 6
+ * @version 8
  * @see DevHelper_Helper_ShippableHelper_Image
  */
 class bdCloudServerHelper_ShippableHelper_Image
@@ -32,12 +32,12 @@ class bdCloudServerHelper_ShippableHelper_Image
             $imageInfo['typeInt'] = IMAGETYPE_PNG;
         }
 
-        if ($width === '' && $height > 0) {
+        if (in_array($width, array('', 0), true) && $height > 0) {
             // stretch width
             $targetHeight = $height;
             $targetWidth = $targetHeight / $image->getHeight() * $image->getWidth();
             $image->thumbnail($targetWidth, $targetHeight);
-        } elseif ($height === '' && $width > 0) {
+        } elseif (in_array($height, array('', 0), true) && $width > 0) {
             // stretch height
             $targetWidth = $width;
             $targetHeight = $targetWidth / $image->getWidth() * $image->getHeight();
@@ -93,7 +93,7 @@ class bdCloudServerHelper_ShippableHelper_Image
 
     protected static function _getTempPath($path)
     {
-        if (Zend_Uri::check($path)) {
+        if (!!parse_url($path, PHP_URL_HOST)) {
             $tempPath = bdCloudServerHelper_ShippableHelper_TempFile::download($path);
         } else {
             $tempPath = $path;
