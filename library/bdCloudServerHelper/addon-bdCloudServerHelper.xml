@@ -350,8 +350,8 @@ jQuery(function()
 
 	<xen:foreach loop="$newPhrases" value="$phrase">
 		<xen:radiounit label="" name="texts[{$phrase.phrase_map_id}]">
-			<xen:option value="" selected="{$phrase.phrase_id}"><span class="muted">{$phrase.phrase_text}</span></xen:option>
-			<xen:option value="{$phrase.new_phrase_text}" selected="!{$phrase.phrase_id}">{$phrase.new_phrase_text}</xen:option>
+			<xen:option value="" selected="{$phrase.phrase_id} > 0"><span class="muted">{$phrase.phrase_text}</span></xen:option>
+			<xen:option value="{$phrase.new_phrase_text}" selected="{$phrase.phrase_id} < 1">{$phrase.new_phrase_text}</xen:option>
 			<xen:explain>{$phrase.title}</xen:explain>
 			
 			<xen:html>

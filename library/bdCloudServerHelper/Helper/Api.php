@@ -2,7 +2,7 @@
 
 class bdCloudServerHelper_Helper_Api
 {
-    const GET_PHRASES_TITLES_LIMIT = 1000;
+    const GET_PHRASES_TITLES_LIMIT = 3000;
 
     public static function postPhrases($apiAddress, $languageCode, array $phraseTitles = array(), $addOnId = '')
     {
