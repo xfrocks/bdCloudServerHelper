@@ -122,8 +122,13 @@ class bdCloudServerHelper_XenForo_ControllerAdmin_Phrase extends XFCP_bdCloudSer
 
     public function actionSyncSave()
     {
-        $languageId = $this->_input->filterSingle('language_id', XenForo_Input::UINT);
-        $language = $this->_getLanguageModel()->getLanguageById($languageId);
+        $input = $this->_input->filter(array(
+            'api_address' => XenForo_Input::STRING,
+            'language_id' => XenForo_Input::UINT,
+            'addon_id' => XenForo_Input::STRING,
+        ));
+
+        $language = $this->_getLanguageModel()->getLanguageById($input['language_id']);
         if (empty($language)) {
             return $this->responseNoPermission();
         }
@@ -134,9 +139,11 @@ class bdCloudServerHelper_XenForo_ControllerAdmin_Phrase extends XFCP_bdCloudSer
 
         $texts = $this->_input->filterSingle('texts', XenForo_Input::STRING, array('array' => true));
         $phraseIds = $this->_input->filterSingle('phrase_ids', XenForo_Input::UINT, array('array' => true));
+        $unchangedPhraseMapIds = array();
 
         foreach ($texts as $phraseMapId => $phraseText) {
             if (empty($phraseText)) {
+                $unchangedPhraseMapIds[] = $phraseMapId;
                 continue;
             }
 
@@ -168,11 +175,22 @@ class bdCloudServerHelper_XenForo_ControllerAdmin_Phrase extends XFCP_bdCloudSer
             $writer->save();
         }
 
+        if (count($unchangedPhraseMapIds) > 0) {
+            $unchangedPhrases = $this->_getPhraseModel()->getEffectivePhrasesByMapIds($unchangedPhraseMapIds);
+            $translatedPhrases = array();
+            foreach ($unchangedPhrases as $unchangedPhrase) {
+                if ($unchangedPhrase['map_language_id'] == $unchangedPhrase['language_id']) {
+                    $translatedPhrases[$unchangedPhrase['title']] = $unchangedPhrase['phrase_text'];
+                }
+            }
+
+            if (count($translatedPhrases) > 0) {
+                bdCloudServerHelper_Helper_Api::postPhrasesSuggestions($input['api_address'],
+                    $language['language_code'], $translatedPhrases);
+            }
+        }
+
         return $this->responseRedirect(XenForo_ControllerResponse_Redirect::SUCCESS,
-            XenForo_Link::buildAdminLink('phrases/sync', null, $this->_input->filter(array(
-                'api_address' => XenForo_Input::STRING,
-                'language_id' => XenForo_Input::UINT,
-                'addon_id' => XenForo_Input::STRING,
-            ))));
+            XenForo_Link::buildAdminLink('phrases/sync', null, $input));
     }
 }

@@ -4,7 +4,7 @@ class bdCloudServerHelper_Helper_Api
 {
     const GET_PHRASES_TITLES_LIMIT = 1000;
 
-    public static function postPhrases($apiAddress, $languageCode, $phraseTitles = array(), $addOnId = '')
+    public static function postPhrases($apiAddress, $languageCode, array $phraseTitles = array(), $addOnId = '')
     {
         $requestParams = array('language' => $languageCode);
         if (!empty($phraseTitles)) {
@@ -20,6 +20,16 @@ class bdCloudServerHelper_Helper_Api
         } else {
             return array();
         }
+    }
+
+    public static function postPhrasesSuggestions($apiAddress, $languageCode, array $suggestions)
+    {
+        $requestParams = array('language' => $languageCode);
+        $requestParams['gzipped'] = base64_encode(gzencode(json_encode($suggestions), 9));
+
+        $response = self::_request('POST', $apiAddress, 'phrases/suggestions', $requestParams);
+
+        return intval($response['_responseStatus']) == 202;
     }
 
     protected static function _request($method, $apiAddress, $path, array $params = array())
@@ -48,18 +58,27 @@ class bdCloudServerHelper_Helper_Api
             $json = @json_decode($body, true);
 
             if (!is_array($json)) {
-                $json = array('_body' => $body);
+                $json = array('_jsonDecodeError' => true);
             }
 
+            $json['_body'] = $body;
             $json['_headers'] = $response->getHeaders();
             $json['_responseStatus'] = $response->getStatus();
-
-            return $json;
         } catch (Zend_Http_Client_Exception $e) {
-            if (XenForo_Application::debugMode()) {
-                XenForo_Error::logException($e, false);
-            }
-            return false;
+            $json = array(
+                '_body' => $e->getMessage(),
+                '_headers' => array(),
+                '_responseStatus' => 503,
+                '_exception' => $e
+            );
         }
+
+        if (XenForo_Application::debugMode()) {
+            XenForo_Helper_File::log(__METHOD__, sprintf('%s %s %s %s -> %d %s',
+                $method, $apiAddress, $path, var_export($params, true),
+                $json['_responseStatus'], $json['_body']));
+        }
+
+        return $json;
     }
 }
