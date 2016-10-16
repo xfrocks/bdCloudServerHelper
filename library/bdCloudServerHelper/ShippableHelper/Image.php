@@ -1,16 +1,33 @@
 <?php
 
-// updated by DevHelper_Helper_ShippableHelper at 2016-07-12T13:33:35+00:00
+// updated by DevHelper_Helper_ShippableHelper at 2016-10-16T06:18:20+00:00
 
 /**
  * Class bdCloudServerHelper_ShippableHelper_Image
- * @version 8
+ * @version 9
  * @see DevHelper_Helper_ShippableHelper_Image
  */
 class bdCloudServerHelper_ShippableHelper_Image
 {
     public static function getThumbnailUrl($fullPath, $width, $height = 0, $dir = null)
     {
+        if (defined('BDIMAGE_IS_WORKING')) {
+            $size = $width;
+            $mode = bdImage_Integration::MODE_CROP_EQUAL;
+            if ($width > 0 && $height > 0) {
+                $size = $width;
+                $mode = $height;
+            } elseif ($width > 0) {
+                $size = $width;
+                $mode = bdImage_Integration::MODE_STRETCH_HEIGHT;
+            } elseif ($height > 0) {
+                $size = $height;
+                $mode = bdImage_Integration::MODE_STRETCH_WIDTH;
+            }
+
+            return bdImage_Integration::buildThumbnailLink($fullPath, $size, $mode);
+        }
+
         $thumbnailPath = self::getThumbnailPath($fullPath, $width, $height, $dir);
         $thumbnailUrl = XenForo_Application::$externalDataUrl
             . self::_getThumbnailRelativePath($fullPath, $width, $height, $dir);

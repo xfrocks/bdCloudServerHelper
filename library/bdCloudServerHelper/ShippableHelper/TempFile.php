@@ -1,10 +1,10 @@
 <?php
 
-// updated by DevHelper_Helper_ShippableHelper at 2016-08-07T23:02:02+00:00
+// updated by DevHelper_Helper_ShippableHelper at 2016-10-16T06:18:20+00:00
 
 /**
  * Class bdCloudServerHelper_ShippableHelper_TempFile
- * @version 5
+ * @version 7
  * @see DevHelper_Helper_ShippableHelper_TempFile
  */
 class bdCloudServerHelper_ShippableHelper_TempFile
@@ -40,6 +40,7 @@ class bdCloudServerHelper_ShippableHelper_TempFile
             'timeOutInSeconds' => 0,
             'maxRedirect' => 3,
             'maxDownloadSize' => 0,
+            'secured' => 0,
         );
 
         $tempFile = trim(strval($options['tempFile']));
@@ -84,6 +85,10 @@ class bdCloudServerHelper_ShippableHelper_TempFile
         } else {
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);
         }
+        if ($options['secured'] === 0) {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        }
 
         curl_exec($ch);
 
@@ -95,6 +100,10 @@ class bdCloudServerHelper_ShippableHelper_TempFile
 
         if (XenForo_Application::debugMode()) {
             $fileSize = filesize($tempFile);
+            if ($downloaded && $fileSize === 0) {
+                clearstatcache();
+                $fileSize = filesize($tempFile);
+            }
 
             XenForo_Helper_File::log(__CLASS__, call_user_func_array('sprintf', array(
                 'download %s -> %s, %s, %d bytes%s',
