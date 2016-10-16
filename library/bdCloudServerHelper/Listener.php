@@ -11,8 +11,16 @@ class bdCloudServerHelper_Listener
 
     public static function init_dependencies(XenForo_Dependencies_Abstract $dependencies)
     {
-        if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
-            $requestPaths = XenForo_Application::get('requestPaths');
+        $requestPaths = XenForo_Application::get('requestPaths');
+        if (XenForo_Application::$secure === false
+            && isset($requestPaths['protocol'])
+            && isset($_SERVER['HTTP_X_FORWARDED_PROTO'])
+            && isset($_SERVER['HTTP_X_FORWARDED_FOR'])
+            && isset($_SERVER['REMOTE_ADDR'])
+            && $requestPaths['protocol'] === 'http'
+            && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https'
+            && $_SERVER['HTTP_X_FORWARDED_FOR'] === $_SERVER['REMOTE_ADDR']
+        ) {
             $requestPaths['protocol'] = 'https';
             $hostWithoutPort = preg_replace('#:\d+$#', '', $requestPaths['host']);
             $requestPaths['fullBasePath'] = $requestPaths['protocol'] . '://' . $hostWithoutPort . $requestPaths['basePath'];
