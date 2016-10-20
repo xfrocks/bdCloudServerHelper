@@ -116,6 +116,12 @@ class bdCloudServerHelper_Listener
             && $fc->getDependencies() instanceof XenForo_Dependencies_Public
         ) {
             bdCloudServerHelper_Helper_Template::makeSureTemplatesAreUpToDate($fc);
+        };
+
+        if (XenForo_Application::$secure
+            && $hstsAge = XenForo_Application::getConfig()->get('bdCloudServerHelper_hstsAge', 15768000)
+        ) {
+            $fc->getResponse()->setHeader('Strict-Transport-Security', sprintf('max-age=%d', $hstsAge));
         }
 
         if (XenForo_Application::debugMode()) {
