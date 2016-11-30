@@ -1,15 +1,15 @@
 <?php
 
-// updated by DevHelper_Helper_ShippableHelper at 2016-10-16T06:18:20+00:00
+// updated by DevHelper_Helper_ShippableHelper at 2016-11-30T15:59:10+00:00
 
 /**
  * Class bdCloudServerHelper_ShippableHelper_Image
- * @version 9
+ * @version 10
  * @see DevHelper_Helper_ShippableHelper_Image
  */
 class bdCloudServerHelper_ShippableHelper_Image
 {
-    public static function getThumbnailUrl($fullPath, $width, $height = 0, $dir = null)
+    public static function getThumbnailUrl($imageUrl, $width, $height = 0, $dir = null)
     {
         if (defined('BDIMAGE_IS_WORKING')) {
             $size = $width;
@@ -25,114 +25,50 @@ class bdCloudServerHelper_ShippableHelper_Image
                 $mode = bdImage_Integration::MODE_STRETCH_WIDTH;
             }
 
-            return bdImage_Integration::buildThumbnailLink($fullPath, $size, $mode);
+            return bdImage_Integration::buildThumbnailLink($imageUrl, $size, $mode);
         }
 
-        $thumbnailPath = self::getThumbnailPath($fullPath, $width, $height, $dir);
-        $thumbnailUrl = XenForo_Application::$externalDataUrl
-            . self::_getThumbnailRelativePath($fullPath, $width, $height, $dir);
-        if (file_exists($thumbnailPath) && filesize($thumbnailPath) > 0) {
-            return $thumbnailUrl;
-        }
-
-        $tempPath = self::_getTempPath($fullPath);
-        $imageInfo = self::_getImageInfo($tempPath);
-
-        $image = null;
-        if (!empty($imageInfo['typeInt'])) {
-            $image = XenForo_Image_Abstract::createFromFile($tempPath, $imageInfo['typeInt']);
-        }
-        if (empty($image)) {
-            // could not open the image, create a new image
-            $longer = max($width, $height);
-            $image = XenForo_Image_Abstract::createImage($longer, $longer);
-            $imageInfo['typeInt'] = IMAGETYPE_PNG;
-        }
-
-        if (in_array($width, array('', 0), true) && $height > 0) {
-            // stretch width
-            $targetHeight = $height;
-            $targetWidth = $targetHeight / $image->getHeight() * $image->getWidth();
-            $image->thumbnail($targetWidth, $targetHeight);
-        } elseif (in_array($height, array('', 0), true) && $width > 0) {
-            // stretch height
-            $targetWidth = $width;
-            $targetHeight = $targetWidth / $image->getWidth() * $image->getHeight();
-            $image->thumbnail($targetWidth, $targetHeight);
-        } elseif ($width > 0 && $height > 0) {
-            // exact crop
-            $origRatio = $image->getWidth() / $image->getHeight();
-            $cropRatio = $width / $height;
-            if ($origRatio > $cropRatio) {
-                $thumbnailHeight = $height;
-                $thumbnailWidth = $height * $origRatio;
-            } else {
-                $thumbnailWidth = $width;
-                $thumbnailHeight = $width / $origRatio;
+        $thumbnailPath = self::getThumbnailPath($imageUrl, $width, $height, $dir);
+        $thumbnailUrl = XenForo_Link::convertUriToAbsoluteUri(XenForo_Application::$externalDataUrl
+            . self::_getThumbnailRelativePath($imageUrl, $width, $height, $dir), true);
+        if (file_exists($thumbnailPath)) {
+            $thumbnailFileSize = filesize($thumbnailPath);
+            if ($thumbnailFileSize > 0) {
+                return sprintf('%s?fs=%d', $thumbnailUrl, $thumbnailFileSize);
             }
-
-            if ($thumbnailWidth <= $image->getWidth() && $thumbnailHeight <= $image->getHeight()) {
-                $image->thumbnail($thumbnailWidth, $thumbnailHeight);
-                $image->crop(0, 0, $width, $height);
-            } else {
-                // thumbnail requested is larger then the image size
-                if ($origRatio > $cropRatio) {
-                    $image->crop(0, 0, $image->getHeight() * $cropRatio, $image->getHeight());
-                } else {
-                    $image->crop(0, 0, $image->getWidth(), $image->getWidth() / $cropRatio);
-                }
-            }
-        } elseif ($width > 0) {
-            // square crop
-            $image->thumbnailFixedShorterSide($width);
-            $image->crop(0, 0, $width, $width);
         }
 
-        // TODO: progressive jpeg
+        $coreData = bdCloudServerHelper_ShippableHelper_ImageCore::open($imageUrl);
+        $coreData = bdCloudServerHelper_ShippableHelper_ImageCore::thumbnail($coreData, $width, $height);
+        bdCloudServerHelper_ShippableHelper_ImageCore::save($coreData, $thumbnailPath);
 
-        XenForo_Helper_File::createDirectory(dirname($thumbnailPath), true);
-        $outputPath = tempnam(XenForo_Helper_File::getTempDir(), __CLASS__);
-
-        /** @noinspection PhpParamsInspection */
-        $image->output($imageInfo['typeInt'], $outputPath);
-        XenForo_Helper_File::safeRename($outputPath, $thumbnailPath);
-
-        return $thumbnailUrl;
+        return sprintf('%s?t=%d', $thumbnailUrl, XenForo_Application::$time);
     }
 
-    public static function getThumbnailPath($fullPath, $width, $height = 0, $dir = null)
+    public static function getThumbnailPath($imageUrl, $width, $height = 0, $dir = null)
     {
         $thumbnailPath = XenForo_Helper_File::getExternalDataPath()
-            . self::_getThumbnailRelativePath($fullPath, $width, $height, $dir);
+            . self::_getThumbnailRelativePath($imageUrl, $width, $height, $dir);
 
         return $thumbnailPath;
     }
 
-    protected static function _getTempPath($path)
+    protected static function _getThumbnailRelativePath($imageUrl, $width, $height, $dir)
     {
-        if (!!parse_url($path, PHP_URL_HOST)) {
-            $tempPath = bdCloudServerHelper_ShippableHelper_TempFile::download($path);
-        } else {
-            $tempPath = $path;
+        $path = parse_url($imageUrl, PHP_URL_PATH);
+        $basename = basename($path);
+        if (empty($basename)) {
+            $basename = md5($imageUrl);
         }
-
-        return $tempPath;
-    }
-
-    protected static function _getThumbnailRelativePath($fullPath, $width, $height, $dir)
-    {
-        $fileName = preg_replace('#[^a-zA-Z0-9]#', '', basename($fullPath)) . md5(serialize(array(
-                'fullPath' => $fullPath,
+        $fileName = preg_replace('#[^a-zA-Z0-9]#', '', $basename) . md5(serialize(array(
+                'fullPath' => $imageUrl,
                 'width' => $width,
                 'height' => $height,
             )));
-
-        if (XenForo_Helper_File::getFileExtension($fullPath) === 'png') {
-            $ext = 'png';
-        } else {
+        $ext = XenForo_Helper_File::getFileExtension($basename);
+        if (!in_array($ext, array('gif', 'jpeg', 'jpg', 'png'), true)) {
             $ext = 'jpg';
         }
-
         $divider = substr(md5($fileName), 0, 2);
 
         if (empty($dir)) {
@@ -140,36 +76,5 @@ class bdCloudServerHelper_ShippableHelper_Image
         }
 
         return sprintf('/%s/%sx%s/%s/%s.%s', $dir, $width, $height, $divider, $fileName, $ext);
-    }
-
-    protected static function _getImageInfo($path)
-    {
-        $imageInfo = array();
-
-        $fileSize = @filesize($path);
-        if (!empty($fileSize)) {
-            $imageInfo['fileSize'] = $fileSize;
-        }
-
-        if (!empty($imageInfo['fileSize'])
-            && $info = @getimagesize($path)
-        ) {
-            $imageInfo['width'] = $info[0];
-            $imageInfo['height'] = $info[1];
-
-            $imageInfo['typeInt'] = $info[2];
-            switch ($imageInfo['typeInt']) {
-                case IMAGETYPE_JPEG:
-                    $imageInfo['type'] = 'jpeg';
-                    break;
-                case IMAGETYPE_PNG:
-                    $imageInfo['type'] = 'png';
-                    break;
-                default:
-                    $imageInfo['typeInt'] = 0;
-            }
-        }
-
-        return $imageInfo;
     }
 }

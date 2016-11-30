@@ -5,7 +5,7 @@ class bdCloudServerHelper_DevHelper_Config extends DevHelper_Config_Base
     protected $_dataClasses = array();
     protected $_dataPatches = array();
     protected $_exportPath = '/Users/sondh/XenForo/bdCloudServerHelper';
-    protected $_exportIncludes = array('cloud/image.php');
+    protected $_exportIncludes = array('cloud');
     protected $_exportExcludes = array();
     protected $_exportAddOns = array();
     protected $_exportStyles = array();
