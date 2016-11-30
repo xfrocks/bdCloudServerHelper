@@ -2,95 +2,142 @@
 
 class bdCloudServerHelper_Helper_Template
 {
-    protected static $_templatesUpdated = 0;
-    protected static $_templatesIsUpdating = false;
+    public static $maxDateDelta = 300;
+
+    protected static $_metadata = null;
 
     /**
-     * Generates script to keep track of last updated time of templates directory.
-     * @param bool $isUpdating
+     * @see bdCloudServerHelper_XenForo_Template_Public
      */
-    public static function markTemplatesAsUpdated($isUpdating = false)
+    public static function setup()
     {
-        file_put_contents(self::_getTemplatesUpdatedScriptPath(), sprintf(
-            "<?php\nbdCloudServerHelper_Helper_Template::setTemplatesUpdated(%s, %s);",
-            var_export(time(), true),
-            $isUpdating ? 'true' : 'false'
-        ), LOCK_EX);
+        class_exists('bdCloudServerHelper_XenForo_Template_Public');
     }
 
-    public static function makeSureTemplatesAreUpToDate(XenForo_FrontController $fc = null)
+    public static function handlePing()
     {
-        /** @noinspection PhpIncludeInspection */
-        @include(self::_getTemplatesUpdatedScriptPath());
+        self::_readMetadata();
 
-        if (self::$_templatesIsUpdating) {
-            // templates are being updated
-            // temporary switch to use db
-            XenForo_Application::getOptions()->set('templateFiles', false);
+        $lastModifiedDate = XenForo_Application::getDb()->fetchOne('SELECT MAX(last_modified_date) FROM xf_style');
+        $lastModifiedDate = intval($lastModifiedDate);
+        if (self::$_metadata['builtDate'] === $lastModifiedDate) {
+            self::_log('Up to date');
+            return false;
+        }
 
-            if (XenForo_Application::debugMode()
-                && $fc != null
-            ) {
-                $fc->getResponse()->setHeader('X-Templates-Files-Updating', 'yes');
+        if (self::$_metadata['inProgressDate'] >= $lastModifiedDate) {
+            self::_log('Already in progress: %d', self::$_metadata['inProgressDate']);
+            return false;
+        }
+
+        $oldDate = self::$_metadata['builtDate'];
+        self::$_metadata['inProgressDate'] = $lastModifiedDate;
+        self::_saveMetadata();
+        self::_log('Start rebuilding for %d', self::$_metadata['inProgressDate']);
+
+        try {
+            $templates = XenForo_Application::getDb()->query('SELECT * FROM xf_template_compiled');
+            while ($template = $templates->fetch()) {
+                bdCloudServerHelper_XenForo_Template_FileHandler::saveWithDate(self::$_metadata['inProgressDate'],
+                    $template['title'], $template['style_id'], $template['language_id'],
+                    $template['template_compiled']);
             }
+        } catch (Exception $e) {
+            XenForo_Error::logException($e, false);
         }
 
-        $lastMod = 0;
-        $visitor = XenForo_Visitor::getInstance();
-        $styleId = (!empty($visitor['style_id']) ? $visitor['style_id'] : 0);
-        if ($styleId === 0) {
-            $styleId = XenForo_Application::getOptions()->get('defaultStyleId');
+        self::$_metadata['builtDate'] = self::$_metadata['inProgressDate'];
+        self::$_metadata['inProgressDate'] = 0;
+        self::_saveMetadata();
+        self::_log('Finished rebuilding for %d', self::$_metadata['builtDate']);
+
+        if ($oldDate > 0) {
+            bdCloudServerHelper_XenForo_Template_FileHandler::deleteWithDate($oldDate, null, null, null);
+            self::_log('Deleted files for %d', $oldDate);
         }
 
-        /** @noinspection PhpUndefinedMethodInspection */
-        $styles = (XenForo_Application::isRegistered('styles')
-            ? XenForo_Application::get('styles')
-            : XenForo_Model::create('XenForo_Model_Style')->getAllStyles()
+        return true;
+    }
+
+    public static function loadTemplateFilePath($title, $styleId, $languageId)
+    {
+        self::_readMetadata();
+
+        if (!isset(self::$_metadata['lastModifiedDates'][$styleId])) {
+            return '';
+        }
+
+        $dateDelta = self::$_metadata['lastModifiedDates'][$styleId] - self::$_metadata['builtDate'];
+        if ($dateDelta > self::$maxDateDelta) {
+            // do not use the files if they are too old
+            return '';
+        }
+
+        return bdCloudServerHelper_XenForo_Template_FileHandler::getWithDate(self::$_metadata['builtDate'],
+            $title, $styleId, $languageId);
+    }
+
+    protected static function _getEffectiveDate()
+    {
+        self::_readMetadata();
+        return self::$_metadata['effectiveDate'];
+    }
+
+    protected static function _readMetadata()
+    {
+        if (self::$_metadata !== null) {
+            return false;
+        }
+
+        self::$_metadata = array(
+            'inProgressDate' => 0,
+            'builtDate' => 0,
+            'lastModifiedDates' => array(),
         );
-        if (!empty($styles[$styleId]['last_modified_date'])) {
-            $lastMod = $styles[$styleId]['last_modified_date'];
-        }
 
-        if (self::$_templatesUpdated < $lastMod) {
-            // mark it first to avoid concurrent requests all trying to rebuild
-            self::markTemplatesAsUpdated(true);
+        $metadataPath = self::_getMetadataPath();
+        if (file_exists($metadataPath)) {
+            $metadataJson = file_get_contents($metadataPath);
+            if (!empty($metadataJson)) {
+                $metadataArray = json_decode($metadataJson, true);
+                foreach (array_keys(self::$_metadata) as $key) {
+                    if (!isset($metadataArray[$key])) {
+                        continue;
+                    }
 
-            /** @var XenForo_Model_Template $templateModel */
-            $templateModel = XenForo_Model::create('XenForo_Model_Template');
-            $templateModel->writeTemplateFiles(false, false);
-
-            self::markTemplatesAsUpdated(false);
-
-            if (XenForo_Application::debugMode()
-                && $fc != null
-            ) {
-                $fc->getResponse()->setHeader('X-Templates-Files-Updated', 'yes');
+                    self::$_metadata[$key] = $metadataArray[$key];
+                }
             }
         }
 
-        if (XenForo_Application::debugMode()
-            && $fc != null
-        ) {
-            $fc->getResponse()->setHeader('X-Templates-From-Files',
-                XenForo_Application::getOptions()->get('templateFiles') ? 'yes' : 'no');
+        if (XenForo_Application::isRegistered('styles')) {
+            $styles = XenForo_Application::get('styles');
+            foreach ($styles as $style) {
+                self::$_metadata['lastModifiedDates'][$style['style_id']] = $style['last_modified_date'];
+            }
         }
+
+        return true;
     }
 
-    /**
-     * Sets updated timestamp for templates directory.
-     * This method should only be called from our auto-generated script.
-     *
-     * @param int $timestamp
-     * @param bool $isUpdating
-     */
-    public static function setTemplatesUpdated($timestamp, $isUpdating = false)
+    protected static function _saveMetadata()
     {
-        self::$_templatesUpdated = max(self::$_templatesUpdated, $timestamp);
-        self::$_templatesIsUpdating = self::$_templatesIsUpdating || $isUpdating;
+        return file_put_contents(self::_getMetadataPath(), json_encode(self::$_metadata), LOCK_EX);
     }
 
-    protected static function _getTemplatesUpdatedScriptPath()
+    protected static function _getMetadataPath()
     {
-        return XenForo_Helper_File::getInternalDataPath() . '/templates-updated.php';
+        return XenForo_Helper_File::getInternalDataPath() . '/templates-bdCloudServerHelper.json';
+    }
+
+    protected static function _log()
+    {
+        if (!XenForo_Application::debugMode()) {
+            return false;
+        }
+
+        $args = func_get_args();
+        $string = call_user_func_array('sprintf', $args);
+        return XenForo_Helper_File::log(__CLASS__, $string);
     }
 }

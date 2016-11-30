@@ -2,14 +2,11 @@
 
 class bdCloudServerHelper_Listener
 {
-    protected static $_templateFileChanged = 0;
-    protected static $_classes = array(
-        'XenForo_CssOutput' => true,
-    );
+    protected static $_classes = array();
 
     protected static $_isReadOnly = false;
 
-    public static function init_dependencies(XenForo_Dependencies_Abstract $dependencies)
+    public static function init_dependencies(XenForo_Dependencies_Abstract $dependencies, array $data)
     {
         $requestPaths = XenForo_Application::get('requestPaths');
         if (XenForo_Application::$secure === false
@@ -70,12 +67,17 @@ class bdCloudServerHelper_Listener
         }
 
         $config = XenForo_Application::getConfig();
-        if ($config->get('bdCloudServerHelper_readOnly')
-            && $dependencies instanceof XenForo_Dependencies_Public
+        if (isset($data['routesPublic'])
+            && $config->get('bdCloudServerHelper_readOnly')
         ) {
             self::$_isReadOnly = true;
             self::$_classes['XenForo_Session'] = true;
             XenForo_Application::set('_bdCloudServerHelper_readonly', true);
+        }
+        if (isset($data['routesPublic'])
+            && $config->get('bdCloudServerHelper_templateFiles')
+        ) {
+            bdCloudServerHelper_Helper_Template::setup();
         }
     }
 
@@ -107,17 +109,6 @@ class bdCloudServerHelper_Listener
         XenForo_ViewRenderer_Abstract &$viewRenderer,
         array &$containerParams
     ) {
-        if (self::$_templateFileChanged > 0) {
-            bdCloudServerHelper_Helper_Template::markTemplatesAsUpdated();
-            return;
-        }
-
-        if (XenForo_Application::getOptions()->get('templateFiles')
-            && $fc->getDependencies() instanceof XenForo_Dependencies_Public
-        ) {
-            bdCloudServerHelper_Helper_Template::makeSureTemplatesAreUpToDate($fc);
-        };
-
         if (XenForo_Application::$secure
             && $hstsAge = XenForo_Application::getConfig()->get('bdCloudServerHelper_hstsAge', 15768000)
         ) {
@@ -150,19 +141,6 @@ class bdCloudServerHelper_Listener
         ) {
             bdCloudServerHelper_Helper_Stats::log($fc);
         }
-    }
-
-    public static function template_file_change(
-        /** @noinspection PhpUnusedParameterInspection */
-        $file,
-        $action
-    ) {
-        if ($action == 'delete') {
-            // ignore delete events to avoid wasting server resources
-            return;
-        }
-
-        self::$_templateFileChanged++;
     }
 
     public static function file_health_check(

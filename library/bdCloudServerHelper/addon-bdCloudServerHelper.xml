@@ -388,7 +388,6 @@ jQuery(function()
     <listener event_id="load_class_controller" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_ControllerAdmin_Phrase" active="1" hint="XenForo_ControllerAdmin_Phrase" description="XenForo_ControllerAdmin_Phrase"/>
     <listener event_id="load_class_model" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_Model_Phrase" active="1" hint="XenForo_Model_Phrase" description="XenForo_Model_Phrase"/>
     <listener event_id="load_class_view" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="load_class_XenForo_ViewAdmin_Log_ServerErrorView" active="1" hint="XenForo_ViewAdmin_Log_ServerErrorView" description="XenForo_ViewAdmin_Log_ServerErrorView"/>
-    <listener event_id="template_file_change" execute_order="10" callback_class="bdCloudServerHelper_Listener" callback_method="template_file_change" active="1" hint="" description=""/>
   </code_event_listeners>
   <cron>
     <entry entry_id="bdcsh_deferred" cron_class="bdCloudServerHelper_CronEntry_Deferred" cron_method="run" active="1"><![CDATA[{"day_type":"dom","dom":["-1"],"hours":["-1"],"minutes":["29","59"]}]]></entry>
