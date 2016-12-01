@@ -3,6 +3,8 @@
 class bdCloudServerHelper_Helper_Template
 {
     public static $maxDateDelta = 300;
+    public static $randomMax = 1000;
+    public static $randomRange = 50;
 
     protected static $_rebuildCmd = '';
     protected static $_metadata = null;
@@ -111,6 +113,15 @@ class bdCloudServerHelper_Helper_Template
         if (self::$_metadata['inProgressDate'] >= $lastModifiedDate) {
             self::_log('%s: Already in progress for %d', __METHOD__, self::$_metadata['inProgressDate']);
             return false;
+        }
+
+        if (self::$randomMax > 0 && self::$randomRange > 0) {
+            // flip the coin to avoid more than one rebuild being triggered at once
+            $random = rand(0, self::$randomMax);
+            if ($random > self::$randomRange) {
+                self::_log('%s: $random=%d', __METHOD__, $random);
+                return false;
+            }
         }
 
         self::_log('Start executing %s', $rebuildCmd);
