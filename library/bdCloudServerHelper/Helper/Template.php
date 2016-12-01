@@ -78,13 +78,14 @@ class bdCloudServerHelper_Helper_Template
             return '';
         }
 
-        $dateDelta = $styleLastModifiedDate - self::$_metadata['builtDate'];
-        if ($dateDelta > 0) {
+        if ($styleLastModifiedDate - self::$_metadata['builtDate'] > 0) {
             self::_attemptRebuild();
-        }
-        if ($dateDelta > self::$maxDateDelta) {
-            // do not use the files if they are too old
-            return '';
+
+            $dateDelta = XenForo_Application::$time - $styleLastModifiedDate;
+            if ($dateDelta > self::$maxDateDelta) {
+                // do not use the files if the rebuilder seems to be stale
+                return '';
+            }
         }
 
         return bdCloudServerHelper_XenForo_Template_FileHandler::getWithDate(self::$_metadata['builtDate'],
