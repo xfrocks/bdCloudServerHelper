@@ -38,7 +38,7 @@ class bdCloudServerHelper_XenForo_Template_FileHandler extends XenForo_Template_
     {
         $instance = self::_getDateInstance($date);
         $instance->_deleteTemplate($title, $styleId, $languageId);
-        @unlink($instance->_path);
+        @rmdir($instance->_path);
     }
 
     /**
