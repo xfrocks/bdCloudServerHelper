@@ -77,7 +77,15 @@ class bdCloudServerHelper_Listener
         if (isset($data['routesPublic'])
             && $config->get('bdCloudServerHelper_templateFiles')
         ) {
-            bdCloudServerHelper_Helper_Template::setup();
+            // it's possible to setup a rebuild command that will be exec()'d
+            // when the template files are found to be outdated,
+            // to avoid slowing down the current request, the command should be something like
+            // `nohup curl http://domain.com/xenforo/cloud/template.php > /dev/null 2>&1 &`
+            // it's entirely optional though, the recommended way to rebuild the files
+            // is to setup a cronjob pointing to the cloud/template.php file
+            $rebuildCmd = $config->get('bdCloudServerHelper_templateRebuildCmd');
+
+            bdCloudServerHelper_Helper_Template::setup($rebuildCmd);
         }
     }
 

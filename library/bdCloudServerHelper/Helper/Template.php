@@ -4,18 +4,23 @@ class bdCloudServerHelper_Helper_Template
 {
     public static $maxDateDelta = 300;
 
+    protected static $_rebuildCmd = '';
     protected static $_metadata = null;
     protected static $_lastModifiedDates = null;
 
     /**
+     * @param string $rebuildCmd
+     *
      * @see bdCloudServerHelper_XenForo_Template_Public
      */
-    public static function setup()
+    public static function setup($rebuildCmd)
     {
         class_exists('bdCloudServerHelper_XenForo_Template_Public');
 
         // disable built-in template files feature
         XenForo_Application::getOptions()->set('templateFiles', false);
+
+        self::$_rebuildCmd = $rebuildCmd;
     }
 
     public static function handlePing()
@@ -24,13 +29,13 @@ class bdCloudServerHelper_Helper_Template
 
         $lastModifiedDate = XenForo_Application::getDb()->fetchOne('SELECT MAX(last_modified_date) FROM xf_style');
         $lastModifiedDate = intval($lastModifiedDate);
-        if (self::$_metadata['builtDate'] === $lastModifiedDate) {
-            self::_log('Up to date');
+        if (self::$_metadata['builtDate'] >= $lastModifiedDate) {
+            self::_log('%s: Up to date', __METHOD__);
             return false;
         }
 
         if (self::$_metadata['inProgressDate'] >= $lastModifiedDate) {
-            self::_log('Already in progress: %d', self::$_metadata['inProgressDate']);
+            self::_log('%s: Already in progress for %d', __METHOD__, self::$_metadata['inProgressDate']);
             return false;
         }
 
@@ -74,6 +79,9 @@ class bdCloudServerHelper_Helper_Template
         }
 
         $dateDelta = $styleLastModifiedDate - self::$_metadata['builtDate'];
+        if ($dateDelta > 0) {
+            self::_attemptRebuild();
+        }
         if ($dateDelta > self::$maxDateDelta) {
             // do not use the files if they are too old
             return '';
@@ -81,6 +89,34 @@ class bdCloudServerHelper_Helper_Template
 
         return bdCloudServerHelper_XenForo_Template_FileHandler::getWithDate(self::$_metadata['builtDate'],
             $title, $styleId, $languageId);
+    }
+
+    protected static function _attemptRebuild()
+    {
+        if (empty(self::$_rebuildCmd)) {
+            return false;
+        }
+        $rebuildCmd = self::$_rebuildCmd;
+        self::$_rebuildCmd = '';
+
+        self::_getLastModifiedDate(0);
+        $lastModifiedDate = max(self::$_lastModifiedDates);
+
+        if (self::$_metadata['builtDate'] >= $lastModifiedDate) {
+            self::_log('%s: Up to date', __METHOD__);
+            return false;
+        }
+
+        if (self::$_metadata['inProgressDate'] >= $lastModifiedDate) {
+            self::_log('%s: Already in progress for %d', __METHOD__, self::$_metadata['inProgressDate']);
+            return false;
+        }
+
+        self::_log('Start executing %s', $rebuildCmd);
+        exec($rebuildCmd, $output, $returnVar);
+        self::_log('Finished executing %s: %d, %s', $rebuildCmd, $returnVar, $output);
+
+        return true;
     }
 
     protected static function _getLastModifiedDate($styleId)
@@ -149,6 +185,14 @@ class bdCloudServerHelper_Helper_Template
         }
 
         $args = func_get_args();
+        foreach ($args as &$argRef) {
+            if (is_array($argRef)) {
+                $argRef = var_export($argRef, true);
+            } elseif (!is_string($argRef)) {
+                $argRef = strval($argRef);
+            }
+        }
+
         $string = call_user_func_array('sprintf', $args);
         return XenForo_Helper_File::log(__CLASS__, $string);
     }
