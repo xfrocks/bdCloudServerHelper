@@ -12,6 +12,9 @@ class bdCloudServerHelper_Helper_Template
     public static function setup()
     {
         class_exists('bdCloudServerHelper_XenForo_Template_Public');
+
+        // disable built-in template files feature
+        XenForo_Application::getOptions()->set('templateFiles', false);
     }
 
     public static function handlePing()
