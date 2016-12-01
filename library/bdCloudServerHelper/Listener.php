@@ -4,11 +4,14 @@ class bdCloudServerHelper_Listener
 {
     protected static $_classes = array();
 
+    protected static $_hostname = '';
     protected static $_isReadOnly = false;
 
     public static function init_dependencies(XenForo_Dependencies_Abstract $dependencies, array $data)
     {
+        $config = XenForo_Application::getConfig();
         $requestPaths = XenForo_Application::get('requestPaths');
+
         if (XenForo_Application::$secure === false
             && isset($requestPaths['protocol'])
             && $requestPaths['protocol'] === 'http'
@@ -34,7 +37,11 @@ class bdCloudServerHelper_Listener
         }
 
         // inject hostname into $_POST to make it available in server error log
-        $_POST['.hostname'] = gethostname();
+        self::$_hostname = $config->get('bdCloudServerHelper_hostname');
+        if (empty(self::$_hostname)) {
+            self::$_hostname = gethostname();
+        }
+        $_POST['.hostname'] = self::$_hostname;
 
         $optionRedis = bdCloudServerHelper_Option::get('redis');
         if (!empty($optionRedis['attachment_view'])) {
@@ -66,7 +73,6 @@ class bdCloudServerHelper_Listener
             self::$_classes['XenForo_Model_Search'] = true;
         }
 
-        $config = XenForo_Application::getConfig();
         if (isset($data['routesPublic'])
             && $config->get('bdCloudServerHelper_readOnly')
         ) {
@@ -124,7 +130,7 @@ class bdCloudServerHelper_Listener
         }
 
         if (XenForo_Application::debugMode()) {
-            $fc->getResponse()->setHeader('X-XenForo-Hostname', gethostname());
+            $fc->getResponse()->setHeader('X-XenForo-Hostname', self::getHostname());
         }
 
         if (self::isReadOnly()) {
@@ -157,6 +163,11 @@ class bdCloudServerHelper_Listener
         array &$hashes
     ) {
         $hashes += bdCloudServerHelper_FileSums::getHashes();
+    }
+
+    public static function getHostname()
+    {
+        return self::$_hostname;
     }
 
     public static function isReadOnly()
