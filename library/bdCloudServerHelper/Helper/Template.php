@@ -5,6 +5,7 @@ class bdCloudServerHelper_Helper_Template
     public static $maxDateDelta = 300;
 
     protected static $_metadata = null;
+    protected static $_lastModifiedDates = null;
 
     /**
      * @see bdCloudServerHelper_XenForo_Template_Public
@@ -66,11 +67,13 @@ class bdCloudServerHelper_Helper_Template
     {
         self::_readMetadata();
 
-        if (!isset(self::$_metadata['lastModifiedDates'][$styleId])) {
+        $styleLastModifiedDate = self::_getLastModifiedDate($styleId);
+        if ($styleLastModifiedDate === 0) {
+            // do not proceed with invalid style id
             return '';
         }
 
-        $dateDelta = self::$_metadata['lastModifiedDates'][$styleId] - self::$_metadata['builtDate'];
+        $dateDelta = $styleLastModifiedDate - self::$_metadata['builtDate'];
         if ($dateDelta > self::$maxDateDelta) {
             // do not use the files if they are too old
             return '';
@@ -80,10 +83,24 @@ class bdCloudServerHelper_Helper_Template
             $title, $styleId, $languageId);
     }
 
-    protected static function _getEffectiveDate()
+    protected static function _getLastModifiedDate($styleId)
     {
-        self::_readMetadata();
-        return self::$_metadata['effectiveDate'];
+        if (self::$_lastModifiedDates === null) {
+            self::$_lastModifiedDates = array();
+
+            if (XenForo_Application::isRegistered('styles')) {
+                $styles = XenForo_Application::get('styles');
+                foreach ($styles as $style) {
+                    self::$_lastModifiedDates[$style['style_id']] = $style['last_modified_date'];
+                }
+            }
+        }
+
+        if (isset(self::$_lastModifiedDates[$styleId])) {
+            return self::$_lastModifiedDates[$styleId];
+        } else {
+            return 0;
+        }
     }
 
     protected static function _readMetadata()
@@ -95,7 +112,6 @@ class bdCloudServerHelper_Helper_Template
         self::$_metadata = array(
             'inProgressDate' => 0,
             'builtDate' => 0,
-            'lastModifiedDates' => array(),
         );
 
         $metadataPath = self::_getMetadataPath();
@@ -110,13 +126,6 @@ class bdCloudServerHelper_Helper_Template
 
                     self::$_metadata[$key] = $metadataArray[$key];
                 }
-            }
-        }
-
-        if (XenForo_Application::isRegistered('styles')) {
-            $styles = XenForo_Application::get('styles');
-            foreach ($styles as $style) {
-                self::$_metadata['lastModifiedDates'][$style['style_id']] = $style['last_modified_date'];
             }
         }
 
