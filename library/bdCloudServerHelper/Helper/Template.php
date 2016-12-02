@@ -2,7 +2,8 @@
 
 class bdCloudServerHelper_Helper_Template
 {
-    public static $maxDateDelta = 300;
+    public static $dateNeedRebuild = 60;
+    public static $dateConsiderStale = 600;
     public static $randomMax = 1000;
     public static $randomRange = 50;
 
@@ -80,11 +81,16 @@ class bdCloudServerHelper_Helper_Template
             return '';
         }
 
-        if ($styleLastModifiedDate - self::$_metadata['builtDate'] > 0) {
-            self::_attemptRebuild();
+        $dateDiff = $styleLastModifiedDate - self::$_metadata['builtDate'];
+        if ($dateDiff > 0) {
+            if ($dateDiff > self::$dateNeedRebuild) {
+                // wait a bit before trying to rebuild
+                // in case admin is doing a bunch of add-on installations / upgrades at once
+                self::_attemptRebuild();
+            }
 
             $dateDelta = XenForo_Application::$time - $styleLastModifiedDate;
-            if ($dateDelta > self::$maxDateDelta) {
+            if ($dateDelta > self::$dateConsiderStale) {
                 // do not use the files if the rebuilder seems to be stale
                 return '';
             }

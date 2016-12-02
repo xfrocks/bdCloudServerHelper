@@ -82,6 +82,7 @@ class bdCloudServerHelper_Listener
         }
         if (isset($data['routesPublic'])
             && $config->get('bdCloudServerHelper_templateFiles')
+            && empty($_COOKIE[XenForo_Application::getConfig()->get('cookie')->get('prefix') . 'session_admin'])
         ) {
             // it's possible to setup a rebuild command that will be exec()'d
             // when the template files are found to be outdated,
