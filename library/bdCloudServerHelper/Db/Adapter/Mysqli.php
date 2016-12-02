@@ -79,7 +79,7 @@ class bdCloudServerHelper_Db_Adapter_Mysqli extends Zend_Db_Adapter_Mysqli
         }
 
         if (bdCloudServerHelper_Listener::isReadOnly()
-            && preg_match('#^(insert|update|replace|delete|truncate)#i', $sql)
+            && preg_match('#^\s*(insert|update|replace|delete|truncate)#i', $sql)
         ) {
             return parent::query($sqlNoOp);
         }
