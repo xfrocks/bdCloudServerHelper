@@ -81,15 +81,15 @@ class bdCloudServerHelper_Helper_Template
             return '';
         }
 
-        $dateDiff = $styleLastModifiedDate - self::$_metadata['builtDate'];
-        if ($dateDiff > 0) {
-            if ($dateDiff > self::$dateNeedRebuild) {
+        if ($styleLastModifiedDate - self::$_metadata['builtDate'] > 0) {
+            $dateDelta = XenForo_Application::$time - $styleLastModifiedDate;
+
+            if ($dateDelta > self::$dateNeedRebuild) {
                 // wait a bit before trying to rebuild
                 // in case admin is doing a bunch of add-on installations / upgrades at once
                 self::_attemptRebuild();
             }
 
-            $dateDelta = XenForo_Application::$time - $styleLastModifiedDate;
             if ($dateDelta > self::$dateConsiderStale) {
                 // do not use the files if the rebuilder seems to be stale
                 return '';
