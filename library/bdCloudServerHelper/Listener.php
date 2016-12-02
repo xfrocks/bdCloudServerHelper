@@ -142,6 +142,8 @@ class bdCloudServerHelper_Listener
                 $dependencies->notices[$noticeParam] = $noticeKey;
                 $containerParams[$noticeParam] = true;
             }
+
+            $containerParams['noSocialLogin'] = true;
         }
     }
 
