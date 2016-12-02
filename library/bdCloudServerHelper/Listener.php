@@ -93,6 +93,10 @@ class bdCloudServerHelper_Listener
 
             bdCloudServerHelper_Helper_Template::setup($rebuildCmd);
         }
+
+        if (isset($data['routesAdmin'])) {
+            bdCloudServerHelper_ShippableHelper_Updater::onInitDependencies($dependencies);
+        }
     }
 
     public static function load_class($class, array &$extend)
