@@ -36,6 +36,25 @@ class bdCloudServerHelper_Listener
             XenForo_Application::$secure = true;
         }
 
+        if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'GET') {
+            $validHost = $config->get('bdCloudServerHelper_validHost');
+            if (is_string($validHost)) {
+                if ($requestPaths['host'] === $validHost) {
+                    // good
+                } elseif (substr($validHost, 0, 1) === '/'
+                    && preg_match($validHost, $requestPaths['host'])
+                ) {
+                    // good
+                } else {
+                    $target = $requestPaths['fullUri'];
+                    $target = preg_replace('#^' . preg_quote(rtrim($requestPaths['fullBasePath'], '/'), '#') . '#',
+                        rtrim(XenForo_Application::getOptions()->get('boardUrl'), '/'), $target);
+                    header('Location: ' . $target);
+                    exit;
+                }
+            }
+        }
+
         // inject hostname into $_POST to make it available in server error log
         self::$_hostname = $config->get('bdCloudServerHelper_hostname');
         if (empty(self::$_hostname)) {
