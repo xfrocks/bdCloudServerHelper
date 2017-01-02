@@ -96,6 +96,7 @@ class bdCloudServerHelper_Listener
             && $config->get('bdCloudServerHelper_readOnly')
         ) {
             self::$_isReadOnly = true;
+            self::$_classes['XenForo_Model_User'] = true;
             self::$_classes['XenForo_Session'] = true;
             XenForo_Application::set('_bdCloudServerHelper_readonly', true);
         }

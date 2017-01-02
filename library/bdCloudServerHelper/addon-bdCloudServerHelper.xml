@@ -484,7 +484,8 @@ jQuery(function()
   </route_prefixes>
   <style_properties/>
   <templates>
-    <template title="bdcsh_notice_board_read_only" version_id="1050400" version_string="1.5.4"><![CDATA[{xen:phrase bdcsh_forum_is_currently_read_only}]]></template>
+    <template title="bdcsh_notice_board_read_only" version_id="1060002" version_string="1.6.0"><![CDATA[{xen:phrase bdcsh_forum_is_currently_read_only}
+<script>document.getElementById('loginBar').remove();</script>]]></template>
   </templates>
   <public_template_modifications>
     <modification template="navigation" modification_key="bdcsh_navigation" description="Remove Current Visitors navbar link if needed." execution_order="10" enabled="1" action="str_replace">

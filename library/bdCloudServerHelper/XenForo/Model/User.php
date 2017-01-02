@@ -2,6 +2,15 @@
 
 class bdCloudServerHelper_XenForo_Model_User extends XFCP_bdCloudServerHelper_XenForo_Model_User
 {
+    public function validateAuthentication($nameOrEmail, $password, &$error = '')
+    {
+        if (bdCloudServerHelper_Listener::isReadOnly()) {
+            throw new XenForo_Exception(new XenForo_Phrase('bdcsh_forum_is_currently_read_only'), true);
+        }
+
+        return parent::validateAuthentication($nameOrEmail, $password, $error);
+    }
+
     public function prepareUserFetchOptions(array $fetchOptions)
     {
         $fetchLastActivity = false;

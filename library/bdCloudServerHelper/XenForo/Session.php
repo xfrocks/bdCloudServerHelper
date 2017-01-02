@@ -2,11 +2,15 @@
 
 class bdCloudServerHelper_XenForo_Session extends XFCP_bdCloudServerHelper_XenForo_Session
 {
-    const SESSION_ID_READ_ONLY = 'read_only';
+    const SESSION_ID_READ_ONLY = 'bdCloudServerHelper_readOnlySessionId';
 
     protected function _setup($sessionId = '', $ipAddress = false, array $defaultSession = null)
     {
-        parent::_setup(self::SESSION_ID_READ_ONLY, $ipAddress, $defaultSession);
+        if (bdCloudServerHelper_Listener::isReadOnly()) {
+            $sessionId = self::SESSION_ID_READ_ONLY;
+        }
+
+        parent::_setup($sessionId, $ipAddress, $defaultSession);
     }
 
     public function getSessionFromSource($sessionId)
@@ -19,16 +23,26 @@ class bdCloudServerHelper_XenForo_Session extends XFCP_bdCloudServerHelper_XenFo
             );
         }
 
-        return false;
+        return parent::getSessionFromSource($sessionId);
     }
 
     public function deleteSessionFromSource($sessionId)
     {
-        // intentionally left empty
+        if ($sessionId === self::SESSION_ID_READ_ONLY) {
+            // no op
+            return;
+        }
+
+        parent::deleteSessionFromSource($sessionId);
     }
 
     public function saveSessionToSource($sessionId, $isUpdate)
     {
-        // intentionally left empty
+        if ($sessionId === self::SESSION_ID_READ_ONLY) {
+            // no op
+            return;
+        }
+
+        parent::saveSessionToSource($sessionId, $isUpdate);
     }
 }
