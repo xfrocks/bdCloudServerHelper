@@ -158,6 +158,8 @@ class bdCloudServerHelper_Listener
         }
 
         if (self::isReadOnly()) {
+            XenForo_Application::set('deferredRun', 0);
+
             $dependencies = $fc->getDependencies();
             if ($dependencies instanceof XenForo_Dependencies_Public) {
                 $noticeParam = 'bdCloudServerHelper_showBoardReadOnlyNotice';
