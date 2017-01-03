@@ -5,7 +5,7 @@ class bdCloudServerHelper_Helper_Redis
     protected static $_keyPrefix = 'xf_';
 
     /**
-     * @return Redis
+     * @return Redis|false
      */
     public static function getConnection()
     {
@@ -38,9 +38,15 @@ class bdCloudServerHelper_Helper_Redis
                 $timeout = 0.0;
             }
 
-            $_redis = new Redis();
-            if (!$_redis->connect($host, $port, $timeout)) {
-                XenForo_Error::logError(sprintf('Cannot connect to Redis %s:%d %f', $host, $port, $timeout));
+            $_redis = null;
+            try {
+                $_redis = new Redis();
+                if (!$_redis->connect($host, $port, $timeout)) {
+                    XenForo_Error::logError(sprintf('Cannot connect to Redis %s:%d %f', $host, $port, $timeout));
+                    return $redis;
+                }
+            } catch (Throwable $t) {
+                XenForo_Error::logError(sprintf('Error connecting to Redis: %s', $t->getMessage()));
                 return $redis;
             }
 
