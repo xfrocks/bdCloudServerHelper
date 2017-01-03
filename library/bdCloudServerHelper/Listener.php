@@ -35,6 +35,7 @@ class bdCloudServerHelper_Listener
 
             XenForo_Application::$secure = true;
         }
+        $fullUriBaseName = basename($requestPaths['fullUri']);
 
         if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'GET') {
             $validHost = $config->get('bdCloudServerHelper_validHost');
@@ -94,12 +95,14 @@ class bdCloudServerHelper_Listener
 
         if (isset($data['routesPublic'])
             && $config->get('bdCloudServerHelper_readOnly')
+            && $fullUriBaseName !== 'deferred.php'
         ) {
             self::$_isReadOnly = true;
             self::$_classes['XenForo_Model_User'] = true;
             self::$_classes['XenForo_Session'] = true;
             XenForo_Application::set('_bdCloudServerHelper_readonly', true);
         }
+
         if (isset($data['routesPublic'])
             && $config->get('bdCloudServerHelper_templateFiles')
             && empty($_COOKIE[XenForo_Application::getConfig()->get('cookie')->get('prefix') . 'session_admin'])
