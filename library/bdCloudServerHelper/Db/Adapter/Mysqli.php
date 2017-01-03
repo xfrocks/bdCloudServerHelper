@@ -48,7 +48,15 @@ class bdCloudServerHelper_Db_Adapter_Mysqli extends Zend_Db_Adapter_Mysqli
             $this->_config['host'] = reset($hostsArray);
         }
 
-        parent::_connect();
+        try {
+            parent::_connect();
+        } catch (Zend_Db_Exception $e) {
+            XenForo_Helper_File::log('db', sprintf('%s', $e));
+
+            // die fast to avoid extra stress on db
+            header('HTTP/1.1 500 Internal Server Error');
+            die(1);
+        }
 
         if (!empty($this->_connection)) {
             $this->_connection->query('SET @@session.sql_mode=\'STRICT_ALL_TABLES\'');
