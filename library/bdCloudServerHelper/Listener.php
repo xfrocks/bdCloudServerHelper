@@ -38,22 +38,7 @@ class bdCloudServerHelper_Listener
         $fullUriBaseName = basename($requestPaths['fullUri']);
 
         if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'GET') {
-            $validHost = $config->get('bdCloudServerHelper_validHost');
-            if (is_string($validHost)) {
-                if ($requestPaths['host'] === $validHost) {
-                    // good
-                } elseif (substr($validHost, 0, 1) === '/'
-                    && preg_match($validHost, $requestPaths['host'])
-                ) {
-                    // good
-                } else {
-                    $target = $requestPaths['fullUri'];
-                    $target = preg_replace('#^' . preg_quote(rtrim($requestPaths['fullBasePath'], '/'), '#') . '#',
-                        rtrim(XenForo_Application::getOptions()->get('boardUrl'), '/'), $target);
-                    header('Location: ' . $target);
-                    exit;
-                }
-            }
+            self::_assertValidHost($config, $requestPaths);
         }
 
         // inject hostname into $_POST to make it available in server error log
@@ -219,5 +204,40 @@ class bdCloudServerHelper_Listener
         if ($class === 'XenForo_Model_Phrase') {
             $extend[] = 'bdCloudServerHelper_XenForo_Model_Phrase';
         }
+    }
+
+    protected static function _assertValidHost(Zend_Config $config, array $requestPaths)
+    {
+        $validHost = $config->get('bdCloudServerHelper_validHost');
+        if (!is_string($validHost)) {
+            return;
+        }
+
+        if (isset($_SERVER['HTTP_X_HOST_HASH'])
+            && $_SERVER['HTTP_X_HOST_HASH'] === md5($requestPaths['host'] . $config->get('globalSalt'))
+        ) {
+            // custom request header X-Host-Hash provided with a valid hash
+            // let it go through
+            return;
+        }
+
+        if ($requestPaths['host'] === $validHost) {
+            // string matches
+            return;
+        }
+
+        if (substr($validHost, 0, 1) === '/'
+            && preg_match($validHost, $requestPaths['host'])
+        ) {
+            // regex matches
+            return;
+        }
+
+        // force redirect
+        $target = $requestPaths['fullUri'];
+        $target = preg_replace('#^' . preg_quote(rtrim($requestPaths['fullBasePath'], '/'), '#') . '#',
+            rtrim(XenForo_Application::getOptions()->get('boardUrl'), '/'), $target);
+        header('Location: ' . $target);
+        exit;
     }
 }
