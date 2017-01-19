@@ -37,10 +37,6 @@ class bdCloudServerHelper_Listener
         }
         $fullUriBaseName = basename($requestPaths['fullUri']);
 
-        if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'GET') {
-            self::_assertValidHost($config, $requestPaths);
-        }
-
         // inject hostname into $_POST to make it available in server error log
         self::$_hostname = $config->get('bdCloudServerHelper_hostname');
         if (empty(self::$_hostname)) {
@@ -86,6 +82,13 @@ class bdCloudServerHelper_Listener
             self::$_classes['XenForo_Model_User'] = true;
             self::$_classes['XenForo_Session'] = true;
             XenForo_Application::set('_bdCloudServerHelper_readonly', true);
+        }
+
+        if (isset($_SERVER['REQUEST_METHOD'])
+            && $_SERVER['REQUEST_METHOD'] === 'GET'
+            && !self::$_isReadOnly
+        ) {
+            self::_assertValidHost($config, $requestPaths);
         }
 
         if (isset($data['routesPublic'])
