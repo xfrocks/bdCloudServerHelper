@@ -55,6 +55,11 @@ class bdCloudServerHelper_Db_Adapter_Mysqli extends Zend_Db_Adapter_Mysqli
 
             // die fast to avoid extra stress on db
             header('HTTP/1.1 500 Internal Server Error');
+
+            if (XenForo_Application::debugMode()) {
+                echo(nl2br($e->__toString()));
+            }
+
             die(1);
         }
 
