@@ -74,6 +74,11 @@ class bdCloudServerHelper_Listener
             self::$_classes['XenForo_Model_Search'] = true;
         }
 
+        $optionInfluxdb = bdCloudServerHelper_Option::get('influxdb');
+        if (!empty($optionInfluxdb['cron'])) {
+            self::$_classes['XenForo_Model_Cron'] = true;
+        }
+
         if (isset($data['routesPublic'])
             && $config->get('bdCloudServerHelper_readOnly')
             && $fullUriBaseName !== 'deferred.php'

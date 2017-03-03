@@ -50,4 +50,27 @@ class bdCloudServerHelper_Option
             $view, $fieldPrefix, $preparedOption, $canEdit
         );
     }
+
+    public static function renderInfluxdb(XenForo_View $view, $fieldPrefix, array $preparedOption, $canEdit)
+    {
+        $selected = $preparedOption['option_value'];
+        $choices = array();
+
+        foreach (array(
+                     'cron',
+                 ) as $choice) {
+            // new XenForo_Phrase('bdcsh_influxdb_cron')
+            $choices[] = array(
+                'name' => htmlspecialchars($fieldPrefix . "[$preparedOption[option_id]][$choice]"),
+                'label' => new XenForo_Phrase(sprintf('bdcsh_influxdb_%s', $choice)),
+                'selected' => !empty($selected[$choice]),
+            );
+        }
+
+        $preparedOption['formatParams'] = $choices;
+
+        return XenForo_ViewAdmin_Helper_Option::renderOptionTemplateInternal('option_list_option_checkbox',
+            $view, $fieldPrefix, $preparedOption, $canEdit
+        );
+    }
 }

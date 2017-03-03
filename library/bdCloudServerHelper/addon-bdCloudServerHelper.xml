@@ -415,6 +415,12 @@ jQuery(function()
       <sub_options></sub_options>
       <relation group_id="bdCloudServerHelper" display_order="200"/>
     </option>
+    <option option_id="bdcsh_influxdb" edit_format="callback" data_type="array" can_backup="1">
+      <default_value></default_value>
+      <edit_format_params>bdCloudServerHelper_Option::renderInfluxdb</edit_format_params>
+      <sub_options>*</sub_options>
+      <relation group_id="bdCloudServerHelper" display_order="99"/>
+    </option>
     <option option_id="bdcsh_redis" edit_format="callback" data_type="array" can_backup="1">
       <default_value></default_value>
       <edit_format_params>bdCloudServerHelper_Option::renderRedis</edit_format_params>
@@ -451,6 +457,7 @@ jQuery(function()
     <phrase title="bdcsh_cloud_stats_total" version_id="4" version_string="1.1.0"><![CDATA[No. of requests]]></phrase>
     <phrase title="bdcsh_forum_is_currently_read_only" version_id="1050400" version_string="1.5.4"><![CDATA[The forum is currently read only.]]></phrase>
     <phrase title="bdcsh_hostname" version_id="3" version_string="1.0.1"><![CDATA[Hostname]]></phrase>
+    <phrase title="bdcsh_influxdb_cron" version_id="1060003" version_string="1.6.0"><![CDATA[Cron]]></phrase>
     <phrase title="bdcsh_live_update_disabled" version_id="10" version_string="1.3.1"><![CDATA[Live Update is disabled]]></phrase>
     <phrase title="bdcsh_notice_board_read_only" global_cache="1" version_id="1050400" version_string="1.5.4"><![CDATA[Board Read Only]]></phrase>
     <phrase title="bdcsh_redis_attachment_view" version_id="1" version_string="0.9-dev"><![CDATA[Attachment View Logging]]></phrase>
@@ -470,6 +477,8 @@ jQuery(function()
     <phrase title="option_bdcsh_imageProxyIgnoreHttps_explain" version_id="1050201" version_string="1.5.2"><![CDATA[Enable this option to disable proxy feature (both default and this add-on's) for images with secure urls.]]></phrase>
     <phrase title="option_bdcsh_imageProxyWidth" version_id="1040200" version_string="1.4.2"><![CDATA[Image Proxy Width]]></phrase>
     <phrase title="option_bdcsh_imageProxyWidth_explain" version_id="1040200" version_string="1.4.2"><![CDATA[Enter the image width for proxied image, this will replace the default proxy link. Enter 0 to disable this feature.]]></phrase>
+    <phrase title="option_bdcsh_influxdb" version_id="1060003" version_string="1.6.0"><![CDATA[Measure]]></phrase>
+    <phrase title="option_bdcsh_influxdb_explain" version_id="1060003" version_string="1.6.0"><![CDATA[Check the boxes for functionalities for which you want to use measure with Influxdb. Note: config.php must be configured with <span style="font-family: Courier New">$config['bdCloudServerHelper_influxdb'] = array('address' => 'http://influx.domain.com:8086', 'database' => 'xenforo');</span> for this to work.]]></phrase>
     <phrase title="option_bdcsh_redis" version_id="1" version_string="0.9-dev"><![CDATA[Use Redis]]></phrase>
     <phrase title="option_bdcsh_redisStats" version_id="4" version_string="1.1.0"><![CDATA[Save statistic data on Redis]]></phrase>
     <phrase title="option_bdcsh_redisStats_explain" version_id="4" version_string="1.1.0"><![CDATA[]]></phrase>
