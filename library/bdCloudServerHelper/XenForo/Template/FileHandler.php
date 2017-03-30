@@ -11,6 +11,10 @@ class bdCloudServerHelper_XenForo_Template_FileHandler extends XenForo_Template_
      */
     public static function getWithDate($date, $title, $styleId, $languageId)
     {
+        if ($date < 1) {
+            return '';
+        }
+
         return self::_getDateInstance($date)->_getFileName($title, $styleId, $languageId);
     }
 

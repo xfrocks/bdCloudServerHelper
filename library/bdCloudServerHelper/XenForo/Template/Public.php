@@ -20,6 +20,10 @@ class bdCloudServerHelper_XenForo_Template_Public extends _XenForo_Template_Publ
             self::$_styleId, self::$_languageId);
 
         if (strlen($path) > 0) {
+            if (XenForo_Application::debugMode()) {
+                XenForo_Application::getFc()->getResponse()->setHeader('X-XenForo-Template-' . $templateName, $path);
+            }
+
             $this->_usingTemplateFiles = true;
         }
 

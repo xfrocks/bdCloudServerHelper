@@ -18,10 +18,26 @@ class bdCloudServerHelper_Helper_Template
      */
     public static function setup($rebuildCmd)
     {
-        class_exists('bdCloudServerHelper_XenForo_Template_Public');
-
         // disable built-in template files feature
         XenForo_Application::getOptions()->set('templateFiles', false);
+
+        if (!XenForo_Application::isRegistered('fc')) {
+            // front controller is not registered, disable this feature because it's unsafe
+            // normally this indicates that we are in css.php or similar
+            return;
+        }
+        $fc = XenForo_Application::getFc();
+
+        $cookiePrefix = XenForo_Application::getConfig()->get('cookie')->get('prefix');
+        if (!empty($_COOKIE[$cookiePrefix . 'session_admin'])) {
+            // visitor has admin cookie, disable this feature
+            // and force it to use live templates (from db)
+            // also, add a response header to indicate live templates
+            $fc->getResponse()->setHeader('X-XenForo-Template', 'live', true);
+            return;
+        }
+
+        class_exists('bdCloudServerHelper_XenForo_Template_Public');
 
         self::$_rebuildCmd = $rebuildCmd;
     }
