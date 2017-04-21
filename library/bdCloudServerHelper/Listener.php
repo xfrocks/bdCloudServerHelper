@@ -92,6 +92,7 @@ class bdCloudServerHelper_Listener
         if (isset($_SERVER['REQUEST_METHOD'])
             && $_SERVER['REQUEST_METHOD'] === 'GET'
             && !self::$_isReadOnly
+            && !XenForo_Application::debugMode()
         ) {
             self::_assertValidHost($config, $requestPaths);
         }
