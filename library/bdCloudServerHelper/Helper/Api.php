@@ -74,8 +74,8 @@ class bdCloudServerHelper_Helper_Api
         }
 
         if (XenForo_Application::debugMode()) {
-            XenForo_Helper_File::log(__METHOD__, sprintf('%s %s %s %s -> %d %s',
-                $method, $apiAddress, $path, var_export($params, true),
+            XenForo_Helper_File::log('bdCloudServerHelper', sprintf('%s(%s %s %s %s) status=%d body=%s',
+                __METHOD__, $method, $apiAddress, $path, var_export($params, true),
                 $json['_responseStatus'], $json['_body']));
         }
 

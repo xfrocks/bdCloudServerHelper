@@ -49,19 +49,19 @@ class bdCloudServerHelper_Helper_Template
         $lastModifiedDate = XenForo_Application::getDb()->fetchOne('SELECT MAX(last_modified_date) FROM xf_style');
         $lastModifiedDate = intval($lastModifiedDate);
         if (self::$_metadata['builtDate'] >= $lastModifiedDate) {
-            self::_log('%s: Up to date', __METHOD__);
+            self::_log('%s() Up to date', __METHOD__);
             return false;
         }
 
         if (self::$_metadata['inProgressDate'] >= $lastModifiedDate) {
-            self::_log('%s: Already in progress for %d', __METHOD__, self::$_metadata['inProgressDate']);
+            self::_log('%s() Already in progress for %d', __METHOD__, self::$_metadata['inProgressDate']);
             return false;
         }
 
         $oldDate = self::$_metadata['builtDate'];
         self::$_metadata['inProgressDate'] = $lastModifiedDate;
         self::_saveMetadata();
-        self::_log('Start rebuilding for %d', self::$_metadata['inProgressDate']);
+        self::_log('%s() Start rebuilding for %d', __METHOD__, self::$_metadata['inProgressDate']);
 
         try {
             $templates = XenForo_Application::getDb()->query('SELECT * FROM xf_template_compiled');
@@ -77,11 +77,11 @@ class bdCloudServerHelper_Helper_Template
         self::$_metadata['builtDate'] = self::$_metadata['inProgressDate'];
         self::$_metadata['inProgressDate'] = 0;
         self::_saveMetadata();
-        self::_log('Finished rebuilding for %d', self::$_metadata['builtDate']);
+        self::_log('%s() Finished rebuilding for %d', __METHOD__, self::$_metadata['builtDate']);
 
         if ($oldDate > 0) {
             bdCloudServerHelper_XenForo_Template_FileHandler::deleteWithDate($oldDate, null, null, null);
-            self::_log('Deleted files for %d', $oldDate);
+            self::_log('%s() Deleted files for %d', __METHOD__, $oldDate);
         }
 
         return true;
@@ -128,12 +128,12 @@ class bdCloudServerHelper_Helper_Template
         $lastModifiedDate = max(self::$_lastModifiedDates);
 
         if (self::$_metadata['builtDate'] >= $lastModifiedDate) {
-            self::_log('%s: Up to date', __METHOD__);
+            self::_log('%s() Up to date', __METHOD__);
             return false;
         }
 
         if (self::$_metadata['inProgressDate'] >= $lastModifiedDate) {
-            self::_log('%s: Already in progress for %d', __METHOD__, self::$_metadata['inProgressDate']);
+            self::_log('%s() Already in progress for %d', __METHOD__, self::$_metadata['inProgressDate']);
             return false;
         }
 
@@ -141,14 +141,14 @@ class bdCloudServerHelper_Helper_Template
             // flip the coin to avoid more than one rebuild being triggered at once
             $random = rand(0, self::$randomMax);
             if ($random > self::$randomRange) {
-                self::_log('%s: $random=%d', __METHOD__, $random);
+                self::_log('%s() $random=%d', __METHOD__, $random);
                 return false;
             }
         }
 
-        self::_log('Start executing %s', $rebuildCmd);
+        self::_log('%s() Start executing %s', __METHOD__, $rebuildCmd);
         exec($rebuildCmd, $output, $returnVar);
-        self::_log('Finished executing %s: %d, %s', $rebuildCmd, $returnVar, $output);
+        self::_log('%s() Finished executing %s: %d, %s', __METHOD__, $rebuildCmd, $returnVar, $output);
 
         return true;
     }
@@ -228,6 +228,6 @@ class bdCloudServerHelper_Helper_Template
         }
 
         $string = call_user_func_array('sprintf', $args);
-        return XenForo_Helper_File::log(__CLASS__, $string);
+        return XenForo_Helper_File::log('bdCloudServerHelper', $string);
     }
 }

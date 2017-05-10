@@ -294,23 +294,9 @@ class bdCloudServerHelper_Listener
         $cache->save(strval(XenForo_Application::$time),
             self::CACHE_REBUILD_DATA_REGISTRY_CACHE_TIME, array(), $interval);
 
-        $startTime = 0;
-        if (bdCloudServerHelper_Option::get('influxdb', 'cron')) {
-            $startTime = microtime(true);
-        }
-
         /** @var bdCloudServerHelper_Model_DataRegistry $ourDataRegistryModel */
         $ourDataRegistryModel = XenForo_Model::create('bdCloudServerHelper_Model_DataRegistry');
         $rebuilt = $ourDataRegistryModel->rebuildCache();
-
-        if ($startTime !== 0) {
-            bdCloudServerHelper_Helper_Influxdb::write('cron', null, array(),
-                array(
-                    'task' => __METHOD__,
-                    'elapsed' => microtime(true) - $startTime,
-                )
-            );
-        }
 
         fclose($f);
         return $rebuilt;

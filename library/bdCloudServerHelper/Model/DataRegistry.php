@@ -10,6 +10,11 @@ class bdCloudServerHelper_Model_DataRegistry extends XenForo_Model_DataRegistry
             return $rebuilt;
         }
 
+        $startTime = 0;
+        if (XenForo_Application::debugMode()) {
+            $startTime = microtime(true);
+        }
+
         $items = $this->_getMultiFromDb(array(
             // XenForo_Dependencies_Abstract
             'options',
@@ -45,6 +50,11 @@ class bdCloudServerHelper_Model_DataRegistry extends XenForo_Model_DataRegistry
         foreach ($items AS $name => $data) {
             $cache->save($data, $this->_getCacheEntryName($name));
             $rebuilt++;
+        }
+
+        if ($startTime !== 0) {
+            XenForo_Helper_File::log('bdCloudServerHelper', sprintf('%s() rebuilt=%d, elapsed=%f',
+                __METHOD__, $rebuilt, microtime(true) - $startTime));
         }
 
         return $rebuilt;

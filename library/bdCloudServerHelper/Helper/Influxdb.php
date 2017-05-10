@@ -81,7 +81,8 @@ class bdCloudServerHelper_Helper_Influxdb
             $success = $responseStatus === 204;
 
             if (XenForo_Application::debugMode()) {
-                XenForo_Helper_File::log(__ClASS__, sprintf("POST %s\n\t%s\n\t-> %d", $url, $line, $responseStatus));
+                XenForo_Helper_File::log('bdCloudServerHelper', sprintf("%s() POST %s\n\t%s\n\t-> %d",
+                    __METHOD__, $url, $line, $responseStatus));
             }
         } catch (Zend_Exception $e) {
             XenForo_Error::logError(sprintf('%s: %s', $e->getMessage(), $line));
