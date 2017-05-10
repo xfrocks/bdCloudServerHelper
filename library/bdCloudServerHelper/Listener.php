@@ -6,10 +6,13 @@ class bdCloudServerHelper_Listener
     const CONFIG_HSTS_AGE = 'bdCloudServerHelper_hstsAge';
     const CONFIG_INFLUXDB = 'bdCloudServerHelper_influxdb';
     const CONFIG_READONLY = 'bdCloudServerHelper_readOnly';
+    const CONFIG_REBUILD_DATA_REGISTRY_CACHE_INTERVAL = 'bdCloudServerHelper_rebuildDrcInterval';
     const CONFIG_REDIS = 'bdCloudServerHelper_redis';
     const CONFIG_TEMPLATE_FILES = 'bdCloudServerHelper_templateFiles';
     const CONFIG_TEMPLATE_REBUILD_CMD = 'bdCloudServerHelper_templateRebuildCmd';
     const CONFIG_VALID_HOST = 'bdCloudServerHelper_validHost';
+
+    const CACHE_REBUILD_DATA_REGISTRY_CACHE_TIME = 'bdCloudServerHelper_rebuildDrcTime';
 
     protected static $_classes = array();
 
@@ -119,6 +122,13 @@ class bdCloudServerHelper_Listener
             $rebuildCmd = $config->get(self::CONFIG_TEMPLATE_REBUILD_CMD);
 
             bdCloudServerHelper_Helper_Template::setup($rebuildCmd);
+        }
+
+        $rebuildDataRegistryCacheInterval = intval($config->get(self::CONFIG_REBUILD_DATA_REGISTRY_CACHE_INTERVAL));
+        if ($rebuildDataRegistryCacheInterval > 0
+            && !in_array($scriptFileName, array('admin.php', 'css.php', 'index.php'), true)
+        ) {
+            self::_rebuildDataRegistryCache($rebuildDataRegistryCacheInterval);
         }
 
         if (isset($data['routesAdmin'])) {
@@ -243,6 +253,67 @@ class bdCloudServerHelper_Listener
             rtrim(XenForo_Application::getOptions()->get('boardUrl'), '/'), $target);
         header('Location: ' . $target);
         exit;
+    }
+
+    protected static function _rebuildDataRegistryCache($interval)
+    {
+        $rebuilt = 0;
+
+        $cache = XenForo_Application::getCache();
+        if (empty($cache)) {
+            // no cache? Nothing to do
+            return $rebuilt;
+        }
+
+        $lastRebuildTime = $cache->load(self::CACHE_REBUILD_DATA_REGISTRY_CACHE_TIME);
+        $cutoff = XenForo_Application::$time - $interval;
+        if ($lastRebuildTime > $cutoff) {
+            // data is still fresh
+            return $rebuilt;
+        }
+
+        $lockOk = false;
+        $f = fopen(XenForo_Helper_File::getInternalDataPath() . DIRECTORY_SEPARATOR . __METHOD__, 'w');
+        if ($f && flock($f, LOCK_EX | LOCK_NB)) {
+            $lockOk = true;
+        }
+        if ($lockOk) {
+            fwrite($f, strval(XenForo_Application::$time));
+
+            if (XenForo_Application::debugMode()) {
+                fwrite($f, var_export($_SERVER, true));
+            }
+        }
+        if (!$lockOk) {
+            // we didn't have a lock
+            // maybe some other php processes are already rebuilding it
+            fclose($f);
+            return $rebuilt;
+        }
+
+        $cache->save(strval(XenForo_Application::$time),
+            self::CACHE_REBUILD_DATA_REGISTRY_CACHE_TIME, array(), $interval);
+
+        $startTime = 0;
+        if (bdCloudServerHelper_Option::get('influxdb', 'cron')) {
+            $startTime = microtime(true);
+        }
+
+        /** @var bdCloudServerHelper_Model_DataRegistry $ourDataRegistryModel */
+        $ourDataRegistryModel = XenForo_Model::create('bdCloudServerHelper_Model_DataRegistry');
+        $rebuilt = $ourDataRegistryModel->rebuildCache();
+
+        if ($startTime !== 0) {
+            bdCloudServerHelper_Helper_Influxdb::write('cron', null, array(),
+                array(
+                    'task' => __METHOD__,
+                    'elapsed' => microtime(true) - $startTime,
+                )
+            );
+        }
+
+        fclose($f);
+        return $rebuilt;
     }
 
     public static function load_class_XenForo_ControllerAdmin_Phrase($class, array &$extend)
