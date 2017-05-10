@@ -4,22 +4,15 @@ class bdCloudServerHelper_XenForo_Model_Cron extends XFCP_bdCloudServerHelper_Xe
 {
     public function runEntry(array $entry)
     {
-        $measurement = null;
         $startTime = 0;
         if (bdCloudServerHelper_Option::get('influxdb', 'cron')) {
-            $measurement = 'cron';
             $startTime = microtime(true);
         }
 
         parent::runEntry($entry);
 
-        if ($measurement !== null) {
-            bdCloudServerHelper_Helper_Influxdb::write(
-                $measurement,
-                null,
-                array(
-                    'host' => $_POST['.hostname'],
-                ),
+        if ($startTime !== 0) {
+            bdCloudServerHelper_Helper_Influxdb::write('cron', null, array(),
                 array(
                     'task' => sprintf('%s::%s', $entry['cron_class'], $entry['cron_method']),
                     'elapsed' => microtime(true) - $startTime,

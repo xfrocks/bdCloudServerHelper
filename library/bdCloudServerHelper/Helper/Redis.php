@@ -16,7 +16,7 @@ class bdCloudServerHelper_Helper_Redis
 
             /** @var Zend_Config $config */
             $config = XenForo_Application::getConfig();
-            $redisConfig = $config->get('bdCloudServerHelper_redis');
+            $redisConfig = $config->get(bdCloudServerHelper_Listener::CONFIG_REDIS);
             if (empty($redisConfig)) {
                 XenForo_Error::logError('$config["bdCloudServerHelper_redis"] is missing');
                 return $redis;

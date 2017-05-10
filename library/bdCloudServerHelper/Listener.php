@@ -2,6 +2,15 @@
 
 class bdCloudServerHelper_Listener
 {
+    const CONFIG_HOSTNAME = 'bdCloudServerHelper_hostname';
+    const CONFIG_HSTS_AGE = 'bdCloudServerHelper_hstsAge';
+    const CONFIG_INFLUXDB = 'bdCloudServerHelper_influxdb';
+    const CONFIG_READONLY = 'bdCloudServerHelper_readOnly';
+    const CONFIG_REDIS = 'bdCloudServerHelper_redis';
+    const CONFIG_TEMPLATE_FILES = 'bdCloudServerHelper_templateFiles';
+    const CONFIG_TEMPLATE_REBUILD_CMD = 'bdCloudServerHelper_templateRebuildCmd';
+    const CONFIG_VALID_HOST = 'bdCloudServerHelper_validHost';
+
     protected static $_classes = array();
 
     protected static $_hostname = '';
@@ -35,10 +44,11 @@ class bdCloudServerHelper_Listener
 
             XenForo_Application::$secure = true;
         }
-        $fullUriBaseName = basename($requestPaths['fullUri']);
+
+        $scriptFileName = (isset($_SERVER['SCRIPT_FILENAME'])) ? basename($_SERVER['SCRIPT_FILENAME']) : '';
 
         // inject hostname into $_POST to make it available in server error log
-        self::$_hostname = $config->get('bdCloudServerHelper_hostname');
+        self::$_hostname = $config->get(self::CONFIG_HOSTNAME);
         if (empty(self::$_hostname)) {
             self::$_hostname = gethostname();
         }
@@ -80,8 +90,8 @@ class bdCloudServerHelper_Listener
         }
 
         if (isset($data['routesPublic'])
-            && $config->get('bdCloudServerHelper_readOnly')
-            && $fullUriBaseName !== 'deferred.php'
+            && $config->get(self::CONFIG_READONLY)
+            && $scriptFileName === 'index.php'
         ) {
             self::$_isReadOnly = true;
             self::$_classes['XenForo_Model_User'] = true;
@@ -98,7 +108,7 @@ class bdCloudServerHelper_Listener
         }
 
         if (isset($data['routesPublic'])
-            && $config->get('bdCloudServerHelper_templateFiles')
+            && $config->get(self::CONFIG_TEMPLATE_FILES)
         ) {
             // it's possible to setup a rebuild command that will be exec()'d
             // when the template files are found to be outdated,
@@ -106,7 +116,7 @@ class bdCloudServerHelper_Listener
             // `nohup curl http://domain.com/xenforo/cloud/template.php > /dev/null 2>&1 &`
             // it's entirely optional though, the recommended way to rebuild the files
             // is to setup a cronjob pointing to the cloud/template.php file
-            $rebuildCmd = $config->get('bdCloudServerHelper_templateRebuildCmd');
+            $rebuildCmd = $config->get(self::CONFIG_TEMPLATE_REBUILD_CMD);
 
             bdCloudServerHelper_Helper_Template::setup($rebuildCmd);
         }
@@ -145,7 +155,7 @@ class bdCloudServerHelper_Listener
         array &$containerParams
     ) {
         if (XenForo_Application::$secure
-            && $hstsAge = XenForo_Application::getConfig()->get('bdCloudServerHelper_hstsAge', 15768000)
+            && $hstsAge = XenForo_Application::getConfig()->get(self::CONFIG_HSTS_AGE, 15768000)
         ) {
             $fc->getResponse()->setHeader('Strict-Transport-Security', sprintf('max-age=%d', $hstsAge));
         }
@@ -200,23 +210,9 @@ class bdCloudServerHelper_Listener
         return self::$_isReadOnly;
     }
 
-    public static function load_class_XenForo_ControllerAdmin_Phrase($class, array &$extend)
-    {
-        if ($class === 'XenForo_ControllerAdmin_Phrase') {
-            $extend[] = 'bdCloudServerHelper_XenForo_ControllerAdmin_Phrase';
-        }
-    }
-
-    public static function load_class_XenForo_Model_Phrase($class, array &$extend)
-    {
-        if ($class === 'XenForo_Model_Phrase') {
-            $extend[] = 'bdCloudServerHelper_XenForo_Model_Phrase';
-        }
-    }
-
     protected static function _assertValidHost(Zend_Config $config, array $requestPaths)
     {
-        $validHost = $config->get('bdCloudServerHelper_validHost');
+        $validHost = $config->get(self::CONFIG_VALID_HOST);
         if (!is_string($validHost)) {
             return;
         }
@@ -247,5 +243,19 @@ class bdCloudServerHelper_Listener
             rtrim(XenForo_Application::getOptions()->get('boardUrl'), '/'), $target);
         header('Location: ' . $target);
         exit;
+    }
+
+    public static function load_class_XenForo_ControllerAdmin_Phrase($class, array &$extend)
+    {
+        if ($class === 'XenForo_ControllerAdmin_Phrase') {
+            $extend[] = 'bdCloudServerHelper_XenForo_ControllerAdmin_Phrase';
+        }
+    }
+
+    public static function load_class_XenForo_Model_Phrase($class, array &$extend)
+    {
+        if ($class === 'XenForo_Model_Phrase') {
+            $extend[] = 'bdCloudServerHelper_XenForo_Model_Phrase';
+        }
     }
 }

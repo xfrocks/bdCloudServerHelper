@@ -6,7 +6,7 @@ class bdCloudServerHelper_Helper_Influxdb
     {
         /** @var Zend_Config $config */
         $config = XenForo_Application::getConfig();
-        $influxdbConfig = $config->get('bdCloudServerHelper_influxdb');
+        $influxdbConfig = $config->get(bdCloudServerHelper_Listener::CONFIG_INFLUXDB);
         if (empty($influxdbConfig)) {
             XenForo_Error::logError('$config["bdCloudServerHelper_influxdb"] is missing');
             return false;
@@ -29,12 +29,15 @@ class bdCloudServerHelper_Helper_Influxdb
         $url = sprintf('%s/write?db=%s', rtrim($influxdbAddress, '/'), $influxdbDatabase);
 
         $line = self::_escapeString($measurement);
-        if (is_array($tags)) {
-            ksort($tags);
-            foreach ($tags as $tagKey => $tagValue) {
-                $line .= sprintf(',%s=%s', self::_escapeString($tagKey), self::_escapeString($tagValue));
-            }
+
+        $tags = array_merge(array(
+            'host' => $_POST['.hostname'],
+        ), is_array($tags) ? $tags : array());
+        ksort($tags);
+        foreach ($tags as $tagKey => $tagValue) {
+            $line .= sprintf(',%s=%s', self::_escapeString($tagKey), self::_escapeString($tagValue));
         }
+
         if (empty($line)) {
             XenForo_Error::logError('Measurement missing');
             return false;
@@ -81,7 +84,7 @@ class bdCloudServerHelper_Helper_Influxdb
                 XenForo_Helper_File::log(__ClASS__, sprintf("POST %s\n\t%s\n\t-> %d", $url, $line, $responseStatus));
             }
         } catch (Zend_Exception $e) {
-            XenForo_Error::logError($e->getMessage());
+            XenForo_Error::logError(sprintf('%s: %s', $e->getMessage(), $line));
         }
 
         return $success;
