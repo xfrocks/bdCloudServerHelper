@@ -22,8 +22,9 @@ class bdCloudServerHelper_Helper_Redis
                 return $redis;
             }
 
+            $socket = $redisConfig->get('socket');
             $host = $redisConfig->get('host');
-            if (empty($host)) {
+            if (empty($socket) && empty($host)) {
                 XenForo_Error::logError('$config["bdCloudServerHelper_redis"]["host"] is missing');
                 return $redis;
             }
@@ -41,7 +42,14 @@ class bdCloudServerHelper_Helper_Redis
             $_redis = null;
             try {
                 $_redis = new Redis();
-                if (!$_redis->connect($host, $port, $timeout)) {
+
+                if (!empty($socket)) {
+                    $connected = $_redis->connect($socket);
+                } else {
+                    $connected = $_redis->connect($host, $port, $timeout);
+                }
+
+                if (!$connected) {
                     XenForo_Error::logError(sprintf('Cannot connect to Redis %s:%d %f', $host, $port, $timeout));
                     return $redis;
                 }
