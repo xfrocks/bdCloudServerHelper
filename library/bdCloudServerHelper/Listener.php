@@ -124,6 +124,9 @@ class bdCloudServerHelper_Listener
             bdCloudServerHelper_Helper_Template::setup($rebuildCmd);
         }
 
+        // setting manual data registry cache rebuilder here, it's intended to use if all web workers don't share
+        // the same cache backend (e.g. web workers are put in clusters and there is 1 memcached server per cluster)
+        // it's required to configure bdCloudServerHelper_Cache_Core as XenForo cache front-end to handle it properly
         $rebuildDataRegistryCacheInterval = intval($config->get(self::CONFIG_REBUILD_DATA_REGISTRY_CACHE_INTERVAL));
         if ($rebuildDataRegistryCacheInterval > 0
             && !in_array($scriptFileName, array('admin.php', 'css.php', 'index.php'), true)
