@@ -119,7 +119,7 @@ class bdCloudServerHelper_Helper_Redis
      * @param array|string $varNames
      * @return bool
      */
-    public static function clearCounter($type, $varNames)
+    public static function deleteValues($type, $varNames)
     {
         $params = array(self::getHashKey($type));
 

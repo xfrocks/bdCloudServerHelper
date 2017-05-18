@@ -26,31 +26,4 @@ class bdCloudServerHelper_XenForo_Model_Ip extends XFCP_bdCloudServerHelper_XenF
 
         return parent::logIp($userId, $contentType, $contentId, $action, $ipAddress, $date);
     }
-
-    public function bdCloudServerHelper_logLoginIps()
-    {
-        $values = bdCloudServerHelper_Helper_Redis::getValues('ip_login');
-
-        $db = $this->_getDb();
-
-        foreach ($values as $userId => $value) {
-            $value = @unserialize($value);
-            if (isset($value['ip'])
-                && isset($value['log_date'])
-                && $userId > 0
-            ) {
-                $db->insert('xf_ip', array(
-                    'user_id' => $userId,
-                    'content_type' => 'user',
-                    'content_id' => $userId,
-                    'action' => 'login',
-                    'ip' => $value['ip'],
-                    'log_date' => $value['log_date'],
-                ));
-            }
-
-            bdCloudServerHelper_Helper_Redis::clearCounter('ip_login', $userId);
-        }
-    }
-
 }

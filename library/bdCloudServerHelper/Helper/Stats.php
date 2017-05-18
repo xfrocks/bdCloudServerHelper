@@ -144,6 +144,6 @@ class bdCloudServerHelper_Helper_Stats
             $segments[] = $segment;
         }
 
-        bdCloudServerHelper_Helper_Redis::clearCounter($counterType, $segments);
+        bdCloudServerHelper_Helper_Redis::deleteValues($counterType, $segments);
     }
 }

@@ -15,22 +15,4 @@ class bdCloudServerHelper_XenForo_Model_ImageProxy extends XFCP_bdCloudServerHel
 
         return parent::logImageView($image);
     }
-
-    public function bdCloudServerHelper_updateImageViews()
-    {
-        $values = bdCloudServerHelper_Helper_Redis::getValues('image_proxy_view');
-
-        $db = $this->_getDb();
-
-        foreach ($values as $imageId => $value) {
-            $db->query('
-                    UPDATE xf_image_proxy
-                    SET views = views + ?,
-                        last_request_date = ?
-                    WHERE image_id = ?
-                ', array($value, XenForo_Application::$time, $imageId));
-
-            bdCloudServerHelper_Helper_Redis::clearCounter('image_proxy_view', $imageId);
-        }
-    }
 }

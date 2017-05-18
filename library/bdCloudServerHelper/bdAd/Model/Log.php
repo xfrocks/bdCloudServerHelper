@@ -17,24 +17,7 @@ class bdCloudServerHelper_bdAd_Model_Log extends XFCP_bdCloudServerHelper_bdAd_M
     public function aggregateAdClicks()
     {
         if (bdCloudServerHelper_Option::get('redis', 'bdAd')) {
-            $values = bdCloudServerHelper_Helper_Redis::getValues('bdad_click');
-
-            $db = $this->_getDb();
-
-            foreach ($values as $adId => $value) {
-                try {
-                    $db->query('
-                        UPDATE xf_bdad_ad
-                        SET click_count = click_count + ?
-                        WHERE ad_id = ?
-                    ', array($value, $adId));
-                } catch (Zend_Db_Exception $e) {
-                    // stop running, for now
-                    return;
-                }
-
-                bdCloudServerHelper_Helper_Redis::clearCounter('bdad_click', $adId);
-            }
+            bdCloudServerHelper_Helper_RedisValueSync::bdAdClick();
         }
 
         // still let the default method run to handle left over data
@@ -70,24 +53,7 @@ class bdCloudServerHelper_bdAd_Model_Log extends XFCP_bdCloudServerHelper_bdAd_M
     public function aggregateAdViews()
     {
         if (bdCloudServerHelper_Option::get('redis', 'bdAd')) {
-            $values = bdCloudServerHelper_Helper_Redis::getValues('bdad_view');
-
-            $db = $this->_getDb();
-
-            foreach ($values as $adId => $value) {
-                try {
-                    $db->query('
-                        UPDATE xf_bdad_ad
-                        SET view_count = view_count + ?
-                        WHERE ad_id = ?
-                    ', array($value, $adId));
-                } catch (Zend_Db_Exception $e) {
-                    // stop running, for now
-                    return;
-                }
-
-                bdCloudServerHelper_Helper_Redis::clearCounter('bdad_view', $adId);
-            }
+            bdCloudServerHelper_Helper_RedisValueSync::bdAdView();
         }
 
         // still let the default method run to handle left over data
