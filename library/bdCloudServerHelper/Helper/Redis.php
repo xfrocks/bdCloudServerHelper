@@ -71,6 +71,10 @@ class bdCloudServerHelper_Helper_Redis
                 self::$_keyPrefix = $keyPrefix;
             }
 
+            // for HSCAN usage
+            // https://github.com/phpredis/phpredis
+            $_redis->setOption(Redis::OPT_SCAN, Redis::SCAN_RETRY);
+
             $redis = $_redis;
         }
 
