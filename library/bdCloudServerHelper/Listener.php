@@ -5,6 +5,7 @@ class bdCloudServerHelper_Listener
     const CONFIG_HOSTNAME = 'bdCloudServerHelper_hostname';
     const CONFIG_HSTS_AGE = 'bdCloudServerHelper_hstsAge';
     const CONFIG_INFLUXDB = 'bdCloudServerHelper_influxdb';
+    const CONFIG_INTERNAL_INFO_HEADER = 'bdCloudServerHelper_internalInfoHeader';
     const CONFIG_READONLY = 'bdCloudServerHelper_readOnly';
     const CONFIG_REBUILD_DATA_REGISTRY_CACHE_INTERVAL = 'bdCloudServerHelper_rebuildDrcInterval';
     const CONFIG_REDIS = 'bdCloudServerHelper_redis';
@@ -13,6 +14,8 @@ class bdCloudServerHelper_Listener
     const CONFIG_VALID_HOST = 'bdCloudServerHelper_validHost';
 
     const CACHE_REBUILD_DATA_REGISTRY_CACHE_TIME = 'bdCloudServerHelper_rebuildDrcTime';
+
+    public static $internalInfoHeader = '';
 
     protected static $_classes = array();
 
@@ -57,6 +60,8 @@ class bdCloudServerHelper_Listener
         }
         $_POST['.hostname'] = self::$_hostname;
 
+        self::$internalInfoHeader = $config->get(self::CONFIG_INTERNAL_INFO_HEADER, '');
+
         $optionRedis = bdCloudServerHelper_Option::get('redis');
         if (!empty($optionRedis['attachment_view'])) {
             self::$_classes['XenForo_Model_Attachment'] = true;
@@ -78,7 +83,7 @@ class bdCloudServerHelper_Listener
             self::$_classes['bdAd_Model_Log'] = true;
         }
 
-        if (bdCloudServerHelper_Option::get('redisStats')) {
+        if (bdCloudServerHelper_Option::get('redisStats') || self::$internalInfoHeader !== '') {
             self::$_classes['bdCache_Core'] = true;
         }
 
@@ -166,7 +171,8 @@ class bdCloudServerHelper_Listener
         XenForo_ControllerResponse_Abstract &$controllerResponse,
         XenForo_ViewRenderer_Abstract &$viewRenderer,
         array &$containerParams
-    ) {
+    )
+    {
         if (XenForo_Application::$secure
             && $hstsAge = XenForo_Application::getConfig()->get(self::CONFIG_HSTS_AGE, 15768000)
         ) {
@@ -175,6 +181,10 @@ class bdCloudServerHelper_Listener
 
         if (XenForo_Application::debugMode()) {
             $fc->getResponse()->setHeader('X-XenForo-Hostname', self::getHostname());
+        }
+
+        if (self::$internalInfoHeader !== '') {
+            bdCloudServerHelper_Helper_InternalInfo::onControllerResponse($controllerResponse);
         }
 
         if (self::isReadOnly()) {
@@ -197,11 +207,16 @@ class bdCloudServerHelper_Listener
         XenForo_FrontController $fc,
         /** @noinspection PhpUnusedParameterInspection */
         &$output
-    ) {
+    )
+    {
         if (bdCloudServerHelper_Option::get('redisStats')
             && $fc->getDependencies() instanceof XenForo_Dependencies_Public
         ) {
             bdCloudServerHelper_Helper_Stats::log($fc);
+        }
+
+        if (self::$internalInfoHeader !== '') {
+            bdCloudServerHelper_Helper_InternalInfo::setHeader($fc->getResponse(), self::$internalInfoHeader);
         }
     }
 
@@ -209,7 +224,8 @@ class bdCloudServerHelper_Listener
         /** @noinspection PhpUnusedParameterInspection */
         XenForo_ControllerAdmin_Abstract $controller,
         array &$hashes
-    ) {
+    )
+    {
         $hashes += bdCloudServerHelper_FileSums::getHashes();
     }
 
