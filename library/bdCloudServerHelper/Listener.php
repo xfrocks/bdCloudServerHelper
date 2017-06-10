@@ -57,6 +57,9 @@ class bdCloudServerHelper_Listener
         self::$_hostname = $config->get(self::CONFIG_HOSTNAME);
         if (empty(self::$_hostname)) {
             self::$_hostname = gethostname();
+            if (is_string(self::$_hostname)) {
+                self::$_hostname = preg_replace('/\..+$/', '', self::$_hostname);
+            }
         }
         $_POST['.hostname'] = self::$_hostname;
 
