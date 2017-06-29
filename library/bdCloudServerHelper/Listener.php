@@ -110,13 +110,7 @@ class bdCloudServerHelper_Listener
             XenForo_Application::set('_bdCloudServerHelper_readonly', true);
         }
 
-        if (isset($_SERVER['REQUEST_METHOD'])
-            && $_SERVER['REQUEST_METHOD'] === 'GET'
-            && !self::$_isReadOnly
-            && !XenForo_Application::debugMode()
-        ) {
-            self::_assertValidHost($config, $requestPaths);
-        }
+        self::_assertValidHost($config, $requestPaths);
 
         if (isset($data['routesPublic'])
             && $config->get(self::CONFIG_TEMPLATE_FILES)
@@ -249,6 +243,12 @@ class bdCloudServerHelper_Listener
             return;
         }
 
+        if (!isset($_SERVER['REQUEST_METHOD'])
+            || $_SERVER['REQUEST_METHOD'] !== 'GET'
+        ) {
+            return;
+        }
+
         if (isset($_SERVER['HTTP_X_HOST_HASH'])
             && $_SERVER['HTTP_X_HOST_HASH'] === md5($requestPaths['host'] . $config->get('globalSalt'))
         ) {
@@ -273,7 +273,14 @@ class bdCloudServerHelper_Listener
         $target = $requestPaths['fullUri'];
         $target = preg_replace('#^' . preg_quote(rtrim($requestPaths['fullBasePath'], '/'), '#') . '#',
             rtrim(XenForo_Application::getOptions()->get('boardUrl'), '/'), $target);
-        header('Location: ' . $target);
+
+        $headerString = 'Location: ' . $target;
+        if (XenForo_Application::debugMode()) {
+            echo($headerString);
+        } else {
+            header($headerString);
+        }
+
         exit;
     }
 
