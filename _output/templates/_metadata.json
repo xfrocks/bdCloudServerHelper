@@ -1,0 +1,12 @@
+{
+    "public/csh_body_ribbon.html": {
+        "version_id": 1000011,
+        "version_string": "1.0.0 Alpha 1",
+        "hash": "dc227c29aeb52404032aa0fbd751e911"
+    },
+    "public/csh_head_style.html": {
+        "version_id": 1000011,
+        "version_string": "1.0.0 Alpha 1",
+        "hash": "e833a61e2fb69c9f7b7ff85906b336ab"
+    }
+}

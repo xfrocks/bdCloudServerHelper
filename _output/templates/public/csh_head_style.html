@@ -1,0 +1,62 @@
+<xf:if is="$xf.session.isReadOnly">
+    <meta name="is_read_only" content="yes"/>
+    <style>
+        .p-navgroup-link--logIn,
+        .p-navgroup-link--register {
+            display: none;
+        }
+
+        <xf:comment>https://www.cssportal.com/css-ribbon-generator/</xf:comment>
+        body { position: relative; }
+        .csh_ReadOnlyRibbon {
+            position: absolute;
+            right: -5px;
+            top: -5px;
+            z-index: 9999;
+            overflow: hidden;
+            width: 75px;
+            height: 75px;
+            text-align: right;
+        }
+
+        .csh_ReadOnlyRibbon span {
+            font-size: 10px;
+            font-weight: bold;
+            color: {{ property('paletteNeutral1') }};
+            text-transform: uppercase;
+            text-align: center;
+            line-height: 20px;
+            transform: rotate(45deg);
+            -webkit-transform: rotate(45deg);
+            width: 100px;
+            display: block;
+            background: {{ property('paletteAccent2') }};
+            box-shadow: 0 3px 10px -5px rgba(0, 0, 0, 1);
+            position: absolute;
+            top: 19px;
+            right: -21px;
+        }
+
+        .csh_ReadOnlyRibbon span::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 100%;
+            z-index: -1;
+            border: 3px solid {{ property('paletteAccent3') }};
+            border-right-color: transparent;
+            border-bottom-color: transparent;
+        }
+
+        .csh_ReadOnlyRibbon span::after {
+            content: "";
+            position: absolute;
+            right: 0;
+            top: 100%;
+            z-index: -1;
+            border: 3px solid {{ property('paletteAccent3') }};
+            border-bottom-color: transparent;
+            border-left-color: transparent;
+        }
+    </style>
+</xf:if>

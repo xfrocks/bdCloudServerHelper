@@ -5,6 +5,7 @@ namespace Xfrocks\CloudServerHelper;
 class Constant
 {
     const ADD_ON_ID = 'Xfrocks/CloudServerHelper';
+    const IS_READ_ONLY = __CLASS__ . '_isReadOnly';
 
     const COMPILE_PHRASE_GROUP_SKIP_SIMPLE_CACHE = __CLASS__ . '_skipCompilePhraseGroup';
     const COMPILE_PHRASE_GROUP_TIMESTAMP_SIMPLE_CACHE_KEY = 'cpgt';
