@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\Service\\Template\\Compile",
+    "to_class": "Xfrocks\\CloudServerHelper\\XF\\Service\\Template\\Compile",
+    "execute_order": 10,
+    "active": true
+}

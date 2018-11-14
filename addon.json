@@ -1,0 +1,14 @@
+{
+    "legacy_addon_id": "bdCloudServerHelper",
+    "title": "[bd] Cloud Server Helper",
+    "description": "",
+    "version_id": 1000011,
+    "version_string": "1.0.0 Alpha 1",
+    "dev": "",
+    "dev_url": "",
+    "faq_url": "",
+    "support_url": "",
+    "extra_urls": [],
+    "require": [],
+    "icon": ""
+}

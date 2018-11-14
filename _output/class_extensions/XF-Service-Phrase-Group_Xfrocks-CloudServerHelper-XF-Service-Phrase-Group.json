@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\Service\\Phrase\\Group",
+    "to_class": "Xfrocks\\CloudServerHelper\\XF\\Service\\Phrase\\Group",
+    "execute_order": 10,
+    "active": true
+}
